@@ -48,7 +48,7 @@ char *find_executable(char *executable_name, char **path) {
     free(executable_path);
     return NULL;
 }
-
+}
 
 int path(char *args[])
 {

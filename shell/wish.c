@@ -46,7 +46,6 @@ int main(int argc, char *argv[])
 
     if (strcmp(args[0], "exit") == 0)
     {
-        // Handle exit command
         exit(0);
     }
 
@@ -54,28 +53,11 @@ int main(int argc, char *argv[])
 
     if (pid == 0)
     {
-        // Child process
-
-        char cmd_path[256];
-        int found = 0;
-        if (access(args[0], X_OK) == 0)
+        char path[512];
+        snprintf(path, sizeof(path), "/bin/%s", args[0]);
+        if (access(path, X_OK) == 0)
         {
-            found = 1;
-            strcpy(cmd_path, args[0]);
-        }
-        else
-        {
-            char bin_path[5] = "/bin/";
-            strcat(bin_path, args[0]);
-            if (access(bin_path, X_OK) == 0)
-            {
-                found = 1;
-                strcpy(cmd_path, bin_path);
-            }
-        }
-        if (found)
-        {
-            if (execv(cmd_path, args) == -1)
+            if (execv(path, args) == -1)
             {
                 fprintf(stderr, "An error has occurred\n");
                 exit(EXIT_FAILURE);
@@ -83,7 +65,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-            fprintf(stderr, "%s: command not found\n", args[0]);
+            fprintf(stderr, "Command not found: %s\n", args[0]);
             exit(EXIT_FAILURE);
         }
     }

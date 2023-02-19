@@ -33,21 +33,25 @@ int cd(char *args[])
     }
 }
 
-char *find_executable(char *executable_name, char **path) {
-    char *executable_path = malloc(256); 
+char *find_executable(char *executable_name, char **path)
+{
+    char *executable_path = malloc(256); // Allocate a buffer to hold the path
     int i = 0;
 
-
-    while (path[i] != NULL) {
+    // Loop through each directory in the PATH and check for the executable
+    while (path[i] != NULL)
+    {
         snprintf(executable_path, 256, "%s/%s", path[i], executable_name);
-        if (access(executable_path, X_OK) == 0) {
-            return executable_path; 
+        if (access(executable_path, X_OK) == 0)
+        {
+            return executable_path; // Found the executable, return its path
+        }
         i++;
     }
 
+    // If the function hasn't returned yet, the executable was not found
     free(executable_path);
     return NULL;
-}
 }
 
 int path(char *args[])

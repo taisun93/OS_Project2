@@ -73,9 +73,9 @@ int main(int argc, char *argv[])
 {
     int interactive = (argc == 1) ? 1 : 0;
     FILE *input_file = NULL;
-    path("/bin");
+    setenv("PATH", "/bin", 1);
 
-        if (!interactive)
+    if (!interactive)
     {
         if (argc != 2)
         {

@@ -160,6 +160,14 @@ int main(int argc, char *argv[])
             pid_t pid = fork();
             if (pid == 0)
             {
+                char *new_args[MAX_ARGS];
+                int i;
+                for (i = 0; args[i] != NULL; i++)
+                {
+                    new_args[i] = args[i];
+                }
+                new_args[i] = NULL;
+                
                 char *path_env = getenv("PATH");
                 char *path = strdup(path_env); // make a copy of the PATH env string
                 char *dir = strtok(path, ":"); // split the path string into directories using ":" as delimiter

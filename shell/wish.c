@@ -33,53 +33,53 @@ int cd(char *args[])
     }
 }
 
-char *find_executable(char *executable_name, char **path)
-{
-    char *executable_path = malloc(256); // Allocate a buffer to hold the path
-    int i = 0;
-
-    // Loop through each directory in the PATH and check for the executable
-    while (path[i] != NULL)
-    {
-        snprintf(executable_path, 256, "%s/%s", path[i], executable_name);
-        if (access(executable_path, X_OK) == 0)
-        {
-            return executable_path; // Found the executable, return its path
-        }
-        i++;
-    }
-
-    // If the function hasn't returned yet, the executable was not found
-    free(executable_path);
-    return NULL;
-}
-
 int path(char *args[])
 {
     if (args[1] == NULL)
     {
-        // No arguments specified, print current path
-        char *path = getenv("PATH");
-        printf("The PATH variable is now %s\n", path);
+        // No arguments specified, wipe path
+        if (setenv("PATH", "", 1) == -1)
+        {
+            perror("setenv");
+            return 1;
+        }
     }
     else
     {
-        // Combine arguments into colon-separated string
-        char *new_path = args[1];
-        for (int i = 2; args[i] != NULL; i++)
+        pid_t pid = fork();
+        if (pid == 0)
         {
-            new_path = strcat(new_path, ":");
-            new_path = strcat(new_path, args[i]);
+            char *executable_path = get_env(args[0], path);
+            if (executable_path == NULL)
+            {
+                fprintf(stderr, "Command not found: %s\n", args[0]);
+                exit(EXIT_FAILURE);
+            }
+            else
+            {
+                char *new_args[MAX_ARGS];
+                int i;
+                for (i = 0; args[i] != NULL; i++)
+                {
+                    new_args[i] = args[i];
+                }
+                new_args[i] = NULL;
+                if (execv(executable_path, new_args) == -1)
+                {
+                    fprintf(stderr, "An error occurred while executing the command\n");
+                    exit(EXIT_FAILURE);
+                }
+            }
         }
-
-        // Set new path
-        if (setenv("PATH", new_path, 1) != 0)
+        else if (pid < 0)
         {
-            fprintf(stderr, "path: Failed to set PATH variable\n");
-            return 1;
+            perror("fork");
+            exit(EXIT_FAILURE);
         }
-
-        printf("The PATH variable is now %s\n", new_path);
+        else
+        {
+            wait(NULL);
+        }
     }
 
     return 0;
@@ -174,30 +174,32 @@ int main(int argc, char *argv[])
 
             if (pid == 0)
             {
-                char *file = find_executable(args[0], path);
-                if (file != NULL)
+                char filepath[100];
+                int i = 0;
+
+                while (path[i] != NULL)
                 {
-                    if (execv(file, args) == -1)
+                    sprintf(filepath, "%s/%s", path[i], args[0]);
+                    if (access(filepath, X_OK) == 0)
                     {
-                        fprintf(stderr, "An error has occurred\n");
-                        exit(EXIT_FAILURE);
+                        if (execv(filepath, args) == -1)
+                        {
+                            fprintf(stderr, "An error has occurred\n");
+                            exit(EXIT_FAILURE);
+                        }
                     }
+                    i++;
                 }
-                else
-                {
-                    fprintf(stderr, "An error has occurred\n");
-                    exit(EXIT_FAILURE);
-                }
+                fprintf(stderr, "Command not found: %s\n", args[0]);
+                exit(EXIT_FAILURE);
             }
             else if (pid < 0)
             {
-                // Fork failed
                 perror("fork");
                 exit(EXIT_FAILURE);
             }
             else
             {
-                // Parent process
                 wait(NULL);
             }
         }

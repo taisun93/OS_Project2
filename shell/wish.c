@@ -37,12 +37,6 @@ int main(int argc, char *argv[])
 {
     int interactive = (argc == 1) ? 1 : 0;
 
-    if (interactive)
-    {
-        printf("wish> ");
-        fflush(stdout);
-    }
-
     char *input = NULL;
     size_t input_len = 0;
 

@@ -153,25 +153,20 @@ int main(int argc, char *argv[])
 
             if (pid == 0)
             {
-                char file[100] = {0};
-                int i = 0;
-                while (path[i] != NULL)
+                char *file = find_executable(args[0], path);
+                if (file != NULL)
                 {
-                    snprintf(file, sizeof(file), "%s/%s", path[i], args[0]);
-                    if (access(file, X_OK) == 0)
+                    if (execv(file, args) == -1)
                     {
-                        if (execv(file, args) == -1)
-                        {
-                            fprintf(stderr, "An error has occurred\n");
-                            exit(EXIT_FAILURE);
-                        }
+                        fprintf(stderr, "An error has occurred\n");
+                        exit(EXIT_FAILURE);
                     }
-                    i++;
                 }
-
-                // If we got here, the executable wasn't found
-                fprintf(stderr, "An error has occurred\n");
-                exit(EXIT_FAILURE);
+                else
+                {
+                    fprintf(stderr, "An error has occurred\n");
+                    exit(EXIT_FAILURE);
+                }
             }
             else if (pid < 0)
             {

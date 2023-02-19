@@ -154,40 +154,6 @@ int main(int argc, char *argv[])
         {
             path(args);
         }
-        // execute shell scripts
-        else if (strncmp(args[0] + strlen(args[0]) - 3, ".sh", 3) == 0)
-        {
-            char *file_path;
-            int found = 0;
-            char *path_env = getenv("PATH");
-            if (path_env != NULL)
-            {
-                char *path = strdup(path_env);
-                char *dir = strtok(path, ":");
-                while (dir != NULL)
-                {
-                    file_path = malloc(strlen(dir) + strlen(args[0]) + 2);
-                    sprintf(file_path, "%s/%s", dir, args[0]);
-                    if (access(file_path, X_OK) == 0)
-                    {
-                        found = 1;
-                        break;
-                    }
-                    free(file_path);
-                    dir = strtok(NULL, ":");
-                }
-                free(path);
-            }
-            if (found)
-            {
-                execv(file_path, args);
-            }
-            else
-            {
-                fprintf(stderr, "File not found: %s\n", args[0]);
-                exit(EXIT_FAILURE);
-            }
-        }
 
         // execute shit
         else

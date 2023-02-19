@@ -36,24 +36,48 @@ int cd(char *args[])
 int main(int argc, char *argv[])
 {
     int interactive = (argc == 1) ? 1 : 0;
+    FILE *input_file = NULL;
+
+    if (!interactive)
+    {
+        if (argc != 2)
+        {
+            fprintf(stderr, "batch file fuckery\n");
+            exit(EXIT_FAILURE);
+        }
+
+        input_file = fopen(argv[1], "r");
+        if (input_file == NULL)
+        {
+            perror("fopen");
+            exit(EXIT_FAILURE);
+        }
+    }
 
     char *input = NULL;
     size_t input_len = 0;
 
     while (1)
     {
+        // Gets next command
         if (interactive)
         {
             printf("wish> ");
             fflush(stdout);
             if (getline(&input, &input_len, stdin) == -1)
             {
-                // End of input
+                break;
+            }
+        }
+        else
+        {
+            if (getline(&input, &input_len, input_file) == -1)
+            {
                 break;
             }
         }
 
-        input[strcspn(input, "\n")] = '\0'; // Remove trailing newline
+        input[strcspn(input, "\n")] = '\0';
 
         char *args[MAX_INPUT / 2 + 1];
         int num_args = 0;

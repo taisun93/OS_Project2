@@ -33,6 +33,37 @@ int cd(char *args[])
     }
 }
 
+int path(char *args[])
+{
+    if (args[1] == NULL)
+    {
+        // No arguments specified, print current path
+        char *path = getenv("PATH");
+        printf("The PATH variable is now %s\n", path);
+    }
+    else
+    {
+        // Combine arguments into colon-separated string
+        char *new_path = args[1];
+        for (int i = 2; args[i] != NULL; i++)
+        {
+            new_path = strcat(new_path, ":");
+            new_path = strcat(new_path, args[i]);
+        }
+
+        // Set new path
+        if (setenv("PATH", new_path, 1) != 0)
+        {
+            fprintf(stderr, "path: Failed to set PATH variable\n");
+            return 1;
+        }
+
+        printf("The PATH variable is now %s\n", new_path);
+    }
+
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     int interactive = (argc == 1) ? 1 : 0;
@@ -54,7 +85,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    char *path[100] = {"/bin", "/usr/bin", NULL};
+    // char *path[100] = {"/bin", "/usr/bin", NULL};
 
     char *input = NULL;
     size_t input_len = 0;
@@ -114,25 +145,23 @@ int main(int argc, char *argv[])
         }
         else if (strcmp(args[0], "path") == 0)
         {
-            // Update the path
-            int i;
-            for (i = 1; i < num_args; i++)
-            {
-                path[i - 1] = args[i];
-            }
-            path[i - 1] = NULL;
+            path(args);
         }
         else
         {
             pid_t pid = fork();
 
-            if (pid == 0) {
+            if (pid == 0)
+            {
                 char file[100] = {0};
                 int i = 0;
-                while (path[i] != NULL) {
+                while (path[i] != NULL)
+                {
                     snprintf(file, sizeof(file), "%s/%s", path[i], args[0]);
-                    if (access(file, X_OK) == 0) {
-                        if (execv(file, args) == -1) {
+                    if (access(file, X_OK) == 0)
+                    {
+                        if (execv(file, args) == -1)
+                        {
                             fprintf(stderr, "An error has occurred\n");
                             exit(EXIT_FAILURE);
                         }

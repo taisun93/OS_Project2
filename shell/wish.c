@@ -54,6 +54,8 @@ int main(int argc, char *argv[])
         }
     }
 
+    char *path[100] = {"/bin", "/usr/bin", NULL};
+
     char *input = NULL;
     size_t input_len = 0;
 
@@ -110,27 +112,37 @@ int main(int argc, char *argv[])
         {
             cd(args);
         }
+        else if (strcmp(args[0], "path") == 0)
+        {
+            // Update the path
+            int i;
+            for (i = 1; i < num_args; i++)
+            {
+                path[i - 1] = args[i];
+            }
+            path[i - 1] = NULL;
+        }
         else
         {
             pid_t pid = fork();
 
-            if (pid == 0)
-            {
-                char path[512];
-                snprintf(path, sizeof(path), "/bin/%s", args[0]);
-                if (access(path, X_OK) == 0)
-                {
-                    if (execv(path, args) == -1)
-                    {
-                        fprintf(stderr, "An error has occurred\n");
-                        exit(EXIT_FAILURE);
+            if (pid == 0) {
+                char file[100] = {0};
+                int i = 0;
+                while (path[i] != NULL) {
+                    snprintf(file, sizeof(file), "%s/%s", path[i], args[0]);
+                    if (access(file, X_OK) == 0) {
+                        if (execv(file, args) == -1) {
+                            fprintf(stderr, "An error has occurred\n");
+                            exit(EXIT_FAILURE);
+                        }
                     }
+                    i++;
                 }
-                else
-                {
-                    fprintf(stderr, "An error has occurred\n");
-                    exit(EXIT_FAILURE);
-                }
+
+                // If we got here, the executable wasn't found
+                fprintf(stderr, "An error has occurred\n");
+                exit(EXIT_FAILURE);
             }
             else if (pid < 0)
             {

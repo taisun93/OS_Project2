@@ -11,13 +11,13 @@ int cd(char *args[])
     if (args[1] == NULL)
     {
         // No arguments specified, print error message
-        fprintf(stderr, "cd: missing argument\n");
+        fprintf(stderr, "An error has occurred\n");
         return 1;
     }
     else if (args[2] != NULL)
     {
         // Too many arguments specified, print error message
-        fprintf(stderr, "cd: too many arguments\n");
+        fprintf(stderr, "An error has occurred\n");
         return 1;
     }
     else

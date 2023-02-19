@@ -33,6 +33,23 @@ int cd(char *args[])
     }
 }
 
+char *find_executable(char *executable_name, char **path) {
+    char *executable_path = malloc(256); 
+    int i = 0;
+
+
+    while (path[i] != NULL) {
+        snprintf(executable_path, 256, "%s/%s", path[i], executable_name);
+        if (access(executable_path, X_OK) == 0) {
+            return executable_path; 
+        i++;
+    }
+
+    free(executable_path);
+    return NULL;
+}
+
+
 int path(char *args[])
 {
     if (args[1] == NULL)

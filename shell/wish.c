@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
             pid_t pid = fork();
             if (pid == 0)
             {
-                char *executable_path = get_env(args[0], path);
+                char *executable_path = getenv(args[0], path);
                 if (executable_path == NULL)
                 {
                     fprintf(stderr, "Command not found: %s\n", args[0]);
@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
-                    char *new_args[MAX_ARGS];
+                    // char *new_args[900];
                     int i;
                     for (i = 0; args[i] != NULL; i++)
                     {

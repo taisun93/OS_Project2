@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
-                    fprintf(stderr, "Command not found: %s\n", args[0]);
+                    fprintf(stderr, "An error has occurred\n");
                     exit(EXIT_FAILURE);
                 }
             }

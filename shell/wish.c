@@ -10,7 +10,7 @@ int main() {
     char *argv[100];
     while (1) {
         printf("shell> ");
-        ssize_t input_read = getline(&input, &input_len, stdin);
+        getline(&input, &input_len, stdin);
         //parse the input command and split it into an array of arguments
         int argc = 0;
         char *token = strtok(input, " \n");

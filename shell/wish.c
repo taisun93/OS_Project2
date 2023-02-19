@@ -46,11 +46,11 @@ int main(int argc, char *argv[])
         {
             printf("wish> ");
             fflush(stdout);
-        }
-        if (getline(&input, &input_len, stdin) == -1)
-        {
-            // End of input
-            break;
+            if (getline(&input, &input_len, stdin) == -1)
+            {
+                // End of input
+                break;
+            }
         }
 
         input[strcspn(input, "\n")] = '\0'; // Remove trailing newline
@@ -68,7 +68,8 @@ int main(int argc, char *argv[])
 
         if (strcmp(args[0], "exit") == 0)
         {
-            if(interactive){
+            if (interactive)
+            {
                 break;
             }
             exit(0);

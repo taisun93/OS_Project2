@@ -6,18 +6,25 @@
 
 #define MAX_INPUT 512
 
-int cd(char *args[]) {
-    if (args[1] == NULL) {
+int cd(char *args[])
+{
+    if (args[1] == NULL)
+    {
         // No arguments specified, print error message
         fprintf(stderr, "cd: missing argument\n");
         return 1;
-    } else if (args[2] != NULL) {
+    }
+    else if (args[2] != NULL)
+    {
         // Too many arguments specified, print error message
         fprintf(stderr, "cd: too many arguments\n");
         return 1;
-    } else {
+    }
+    else
+    {
         // Change working directory
-        if (chdir(args[1]) != 0) {
+        if (chdir(args[1]) != 0)
+        {
             fprintf(stderr, "cd: %s: No such file or directory\n", args[1]);
             return 1;
         }
@@ -26,16 +33,25 @@ int cd(char *args[]) {
     }
 }
 
-
 int main(int argc, char *argv[])
 {
+    int interactive = (argc == 1) ? 1 : 0;
+
+    if (interactive)
+    {
+        printf("wish> ");
+        fflush(stdout);
+    }
+
     char *input = NULL;
     size_t input_len = 0;
 
-    while (1) {
+    while (1)
+    {
         printf("wish> ");
         fflush(stdout);
-        if (getline(&input, &input_len, stdin) == -1) {
+        if (getline(&input, &input_len, stdin) == -1)
+        {
             // End of input
             break;
         }
@@ -94,6 +110,11 @@ int main(int argc, char *argv[])
                 // Parent process
                 wait(NULL);
             }
+        }
+        if (interactive)
+        {
+            printf("wish> ");
+            fflush(stdout);
         }
     }
 

@@ -6,19 +6,24 @@
 
 #define MAX_INPUT 512
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     char *input = NULL;
     size_t input_len = 0;
 
-    if (argc < 2) {
+    if (argc < 2)
+    {
         // No filename specified, read input from stdin
         printf("wish> ");
         fflush(stdout);
         getline(&input, &input_len, stdin);
-    } else {
+    }
+    else
+    {
         // Filename specified, read input from file
         FILE *file = fopen(argv[1], "r");
-        if (file == NULL) {
+        if (file == NULL)
+        {
             perror("fopen");
             exit(EXIT_FAILURE);
         }
@@ -28,34 +33,68 @@ int main(int argc, char *argv[]) {
 
     input[strcspn(input, "\n")] = '\0'; // Remove trailing newline
 
-    char *args[MAX_INPUT/2 + 1];
+    char *args[MAX_INPUT / 2 + 1];
     int num_args = 0;
 
     char *token = strtok(input, " ");
-    while (token != NULL && num_args < MAX_INPUT/2 + 1) {
+    while (token != NULL && num_args < MAX_INPUT / 2 + 1)
+    {
         args[num_args++] = token;
         token = strtok(NULL, " ");
     }
     args[num_args] = NULL; // Set last argument to NULL
 
-    if (strcmp(args[0], "exit") == 0) {
+    if (strcmp(args[0], "exit") == 0)
+    {
         // Handle exit command
         exit(0);
     }
 
     pid_t pid = fork();
 
-    if (pid == 0) {
+    if (pid == 0)
+    {
         // Child process
-        if (execvp(args[0], args) == -1) {
-            fprintf(stderr, "An error has occurred\n");
+
+        char cmd_path[256];
+        int found = 0;
+        if (access(args[0], X_OK) == 0)
+        {
+            found = 1;
+            strcpy(cmd_path, args[0]);
+        }
+        else
+        {
+            char bin_path[5] = "/bin/";
+            strcat(bin_path, args[0]);
+            if (access(bin_path, X_OK) == 0)
+            {
+                found = 1;
+                strcpy(cmd_path, bin_path);
+            }
+        }
+        if (found)
+        {
+            if (execv(cmd_path, args) == -1)
+            {
+                fprintf(stderr, "An error has occurred\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+        else
+        {
+            fprintf(stderr, "%s: command not found\n", args[0]);
             exit(EXIT_FAILURE);
         }
-    } else if (pid < 0) {
+    }
+    else if (pid < 0)
+    {
         // Fork failed
         perror("fork");
         exit(EXIT_FAILURE);
-    } else {
+    }
+    else
+    {
         // Parent process
         wait(NULL);
     }

@@ -16,23 +16,12 @@ int cd(char *args[]) {
         fprintf(stderr, "cd: too many arguments\n");
         return 1;
     } else {
-        // Concatenate arguments into a single path string
-        char *path = malloc(strlen(args[1]) + strlen("/bin/") + 1);
-        if (path == NULL) {
-            fprintf(stderr, "cd: memory allocation error\n");
-            return 1;
-        }
-        strcpy(path, "/bin/");
-        strcat(path, args[1]);
-
         // Change working directory
-        if (chdir(path) != 0) {
-            fprintf(stderr, "cd: %s: No such file or directory\n", path);
-            free(path);
+        if (chdir(args[1]) != 0) {
+            fprintf(stderr, "cd: %s: No such file or directory\n", args[1]);
             return 1;
         }
 
-        free(path);
         return 0;
     }
 }
@@ -40,13 +29,16 @@ int cd(char *args[]) {
 
 int main(int argc, char *argv[])
 {
-    while(1) {
-        char *input = NULL;
-        size_t input_len = 0;
+    char *input = NULL;
+    size_t input_len = 0;
 
+    while (1) {
         printf("wish> ");
         fflush(stdout);
-        getline(&input, &input_len, stdin);
+        if (getline(&input, &input_len, stdin) == -1) {
+            // End of input
+            break;
+        }
 
         input[strcspn(input, "\n")] = '\0'; // Remove trailing newline
 
@@ -63,45 +55,49 @@ int main(int argc, char *argv[])
 
         if (strcmp(args[0], "exit") == 0)
         {
-            free(input);
             exit(0);
         }
-
-        pid_t pid = fork();
-
-        if (pid == 0)
+        else if (strcmp(args[0], "cd") == 0)
         {
-            char path[512];
-            snprintf(path, sizeof(path), "/bin/%s", args[0]);
-            if (access(path, X_OK) == 0)
-            {
-                if (execv(path, args) == -1)
-                {
-                    fprintf(stderr, "An error has occurred\n");
-                    exit(EXIT_FAILURE);
-                }
-            }
-            else
-            {
-                fprintf(stderr, "Command not found: %s\n", args[0]);
-                free(input);
-                exit(EXIT_FAILURE);
-            }
-        }
-        else if (pid < 0)
-        {
-            // Fork failed
-            perror("fork");
-            exit(EXIT_FAILURE);
+            cd(args);
         }
         else
         {
-            // Parent process
-            wait(NULL);
-        }
+            pid_t pid = fork();
 
-        free(input);
+            if (pid == 0)
+            {
+                char path[512];
+                snprintf(path, sizeof(path), "/bin/%s", args[0]);
+                if (access(path, X_OK) == 0)
+                {
+                    if (execv(path, args) == -1)
+                    {
+                        fprintf(stderr, "An error has occurred\n");
+                        exit(EXIT_FAILURE);
+                    }
+                }
+                else
+                {
+                    fprintf(stderr, "Command not found: %s\n", args[0]);
+                    exit(EXIT_FAILURE);
+                }
+            }
+            else if (pid < 0)
+            {
+                // Fork failed
+                perror("fork");
+                exit(EXIT_FAILURE);
+            }
+            else
+            {
+                // Parent process
+                wait(NULL);
+            }
+        }
     }
+
+    free(input);
 
     return 0;
 }

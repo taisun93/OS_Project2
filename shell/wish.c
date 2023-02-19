@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
     if (pid == 0) {
         // Child process
         if (execvp(args[0], args) == -1) {
-            perror("execvp");
+            perror("An error has occurred");
             exit(EXIT_FAILURE);
         }
     } else if (pid < 0) {

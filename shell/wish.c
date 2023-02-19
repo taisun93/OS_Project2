@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
-                    // char *new_args[900];
+                    char *new_args[900];
                     int i;
                     for (i = 0; args[i] != NULL; i++)
                     {

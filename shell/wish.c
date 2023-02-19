@@ -5,6 +5,7 @@
 #include <sys/wait.h>
 
 #define MAX_INPUT 512
+#define MAX_ARGS 900
 
 int cd(char *args[])
 {
@@ -167,7 +168,7 @@ int main(int argc, char *argv[])
                     new_args[i] = args[i];
                 }
                 new_args[i] = NULL;
-                
+
                 char *path_env = getenv("PATH");
                 char *path = strdup(path_env); // make a copy of the PATH env string
                 char *dir = strtok(path, ":"); // split the path string into directories using ":" as delimiter

@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
             path(args);
         }
         // execute shell scripts
-        else if (endsWith(args[0], ".sh"))
+        else if (strncmp(args[0] + strlen(args[0]) - 3, ".sh", 3) == 0)
         {
             char *file_path;
             int found = 0;

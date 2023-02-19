@@ -42,8 +42,11 @@ int main(int argc, char *argv[])
 
     while (1)
     {
-        printf("wish> ");
-        fflush(stdout);
+        if (interactive)
+        {
+            printf("wish> ");
+            fflush(stdout);
+        }
         if (getline(&input, &input_len, stdin) == -1)
         {
             // End of input
@@ -104,11 +107,6 @@ int main(int argc, char *argv[])
                 // Parent process
                 wait(NULL);
             }
-        }
-        if (interactive)
-        {
-            printf("wish> ");
-            fflush(stdout);
         }
     }
 

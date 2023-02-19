@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 {
     int interactive = (argc == 1) ? 1 : 0;
     FILE *input_file = NULL;
-    path("/bin")
+    path("/bin");
 
         if (!interactive)
     {

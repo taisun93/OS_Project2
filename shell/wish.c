@@ -4,52 +4,61 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-int main() {
+#define MAX_INPUT 512
+
+int main(int argc, char *argv[]) {
     char *input = NULL;
     size_t input_len = 0;
-    char *argv[100];
-    while (1) {
-        printf("shell> ");
+
+    if (argc < 2) {
+        // No filename specified, read input from stdin
+        printf("wish> ");
+        fflush(stdout);
         getline(&input, &input_len, stdin);
-        //parse the input command and split it into an array of arguments
-        int argc = 0;
-        char *token = strtok(input, " \n");
-        while (token != NULL) {
-            argv[argc++] = token;
-            token = strtok(NULL, " \n");
+    } else {
+        // Filename specified, read input from file
+        FILE *file = fopen(argv[1], "r");
+        if (file == NULL) {
+            perror("fopen");
+            exit(EXIT_FAILURE);
         }
-        argv[argc] = NULL;
-        //check if the command is "exit"
-        if (strcmp(argv[0], "exit") == 0) {
-            //exit the shell program
-            exit(0);
-        }
-        //check if the command is "cd"
-        else if (strcmp(argv[0], "cd") == 0) {
-            //check if a directory is specified
-            if (argc < 2) {
-                //print an error message and break the loop
-                printf("cd: missing directory\n");
-                break;
-            }
-            //try to change the directory using chdir
-            if (chdir(argv[1]) != 0) {
-                //print an error message if chdir fails
-                printf("cd: %s: No such file or directory\n", argv[1]);
-            }
-        }
-        //create a child process to execute the command
-        pid_t pid = fork();
-        if (pid == 0) {
-            //child process
-            execv(argv[0], argv);
-            printf("%s: command not found\n", argv[0]);
-            exit(1);
-        } else {
-            //parent process
-            wait(NULL);
-        }
+        getline(&input, &input_len, file);
+        fclose(file);
     }
-    free(input);
+
+    input[strcspn(input, "\n")] = '\0'; // Remove trailing newline
+
+    char *args[MAX_INPUT/2 + 1];
+    int num_args = 0;
+
+    char *token = strtok(input, " ");
+    while (token != NULL && num_args < MAX_INPUT/2 + 1) {
+        args[num_args++] = token;
+        token = strtok(NULL, " ");
+    }
+    args[num_args] = NULL; // Set last argument to NULL
+
+    if (strcmp(args[0], "exit") == 0) {
+        // Handle exit command
+        exit(0);
+    }
+
+    pid_t pid = fork();
+
+    if (pid == 0) {
+        // Child process
+        if (execvp(args[0], args) == -1) {
+            perror("execvp");
+            exit(EXIT_FAILURE);
+        }
+    } else if (pid < 0) {
+        // Fork failed
+        perror("fork");
+        exit(EXIT_FAILURE);
+    } else {
+        // Parent process
+        wait(NULL);
+    }
+
     return 0;
 }

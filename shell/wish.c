@@ -46,39 +46,23 @@ int path(char *args[])
     }
     else
     {
-        pid_t pid = fork();
-        if (pid == 0)
+        // Build new path string
+        char new_path[1024] = {0};
+        int i = 1;
+        while (args[i] != NULL)
         {
-            char *executable_path = get_env(args[0], path);
-            if (executable_path == NULL)
-            {
-                fprintf(stderr, "Command not found: %s\n", args[0]);
-                exit(EXIT_FAILURE);
-            }
-            else
-            {
-                char *new_args[MAX_ARGS];
-                int i;
-                for (i = 0; args[i] != NULL; i++)
-                {
-                    new_args[i] = args[i];
-                }
-                new_args[i] = NULL;
-                if (execv(executable_path, new_args) == -1)
-                {
-                    fprintf(stderr, "An error occurred while executing the command\n");
-                    exit(EXIT_FAILURE);
-                }
-            }
+            strcat(new_path, args[i]);
+            strcat(new_path, ":");
+            i++;
         }
-        else if (pid < 0)
+        // Remove trailing colon
+        new_path[strlen(new_path) - 1] = '\0';
+
+        // Set new path
+        if (setenv("PATH", new_path, 1) == -1)
         {
-            perror("fork");
-            exit(EXIT_FAILURE);
-        }
-        else
-        {
-            wait(NULL);
+            perror("setenv");
+            return 1;
         }
     }
 
@@ -168,30 +152,34 @@ int main(int argc, char *argv[])
         {
             path(args);
         }
+
+        // execute shit
         else
         {
             pid_t pid = fork();
-
             if (pid == 0)
             {
-                char filepath[100];
-                int i = 0;
-
-                while (path[i] != NULL)
+                char *executable_path = get_env(args[0], path);
+                if (executable_path == NULL)
                 {
-                    sprintf(filepath, "%s/%s", path[i], args[0]);
-                    if (access(filepath, X_OK) == 0)
-                    {
-                        if (execv(filepath, args) == -1)
-                        {
-                            fprintf(stderr, "An error has occurred\n");
-                            exit(EXIT_FAILURE);
-                        }
-                    }
-                    i++;
+                    fprintf(stderr, "Command not found: %s\n", args[0]);
+                    exit(EXIT_FAILURE);
                 }
-                fprintf(stderr, "Command not found: %s\n", args[0]);
-                exit(EXIT_FAILURE);
+                else
+                {
+                    char *new_args[MAX_ARGS];
+                    int i;
+                    for (i = 0; args[i] != NULL; i++)
+                    {
+                        new_args[i] = args[i];
+                    }
+                    new_args[i] = NULL;
+                    if (execv(executable_path, new_args) == -1)
+                    {
+                        fprintf(stderr, "An error occurred while executing the command\n");
+                        exit(EXIT_FAILURE);
+                    }
+                }
             }
             else if (pid < 0)
             {

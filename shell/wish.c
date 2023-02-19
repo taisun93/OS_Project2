@@ -68,6 +68,9 @@ int main(int argc, char *argv[])
 
         if (strcmp(args[0], "exit") == 0)
         {
+            if(interactive){
+                break;
+            }
             exit(0);
         }
         else if (strcmp(args[0], "cd") == 0)

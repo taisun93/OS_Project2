@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
 int main() {
     char *input = NULL;
@@ -26,15 +28,14 @@ int main() {
         else if (strcmp(argv[0], "cd") == 0) {
             //check if a directory is specified
             if (argc < 2) {
-                //print an error message and continue the loop
+                //print an error message and break the loop
                 printf("cd: missing directory\n");
-                continue;
+                break;
             }
             //try to change the directory using chdir
             if (chdir(argv[1]) != 0) {
-                //print an error message if chdir fails and continue the loop
+                //print an error message if chdir fails
                 printf("cd: %s: No such file or directory\n", argv[1]);
-                continue;
             }
         }
         //create a child process to execute the command

@@ -92,11 +92,19 @@ int main(int argc, char *argv[])
 
         if (strcmp(args[0], "exit") == 0)
         {
-            if (interactive)
+            if (args[1] != NULL)
             {
-                break;
+                // if args are given for exit
+                fprintf(stderr, "An error has occurred\n");
             }
-            exit(0);
+            else
+            {
+                if (interactive)
+                {
+                    break;
+                }
+                exit(0);
+            }
         }
         else if (strcmp(args[0], "cd") == 0)
         {

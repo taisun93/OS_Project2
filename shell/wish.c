@@ -40,10 +40,10 @@ int cd(char *args[]) {
 
 int main(int argc, char *argv[])
 {
-    char *input = NULL;
-    size_t input_len = 0;
+    while(1) {
+        char *input = NULL;
+        size_t input_len = 0;
 
-    while (1) {
         printf("wish> ");
         fflush(stdout);
         getline(&input, &input_len, stdin);
@@ -61,20 +61,10 @@ int main(int argc, char *argv[])
         }
         args[num_args] = NULL; // Set last argument to NULL
 
-        if (args[0] == NULL) {
-            // Empty input line, prompt again
-            continue;
-        }
-
         if (strcmp(args[0], "exit") == 0)
         {
+            free(input);
             exit(0);
-        }
-
-        if (strcmp(args[0], "cd") == 0)
-        {
-            cd(args);
-            continue;
         }
 
         pid_t pid = fork();
@@ -93,7 +83,8 @@ int main(int argc, char *argv[])
             }
             else
             {
-                fprintf(stderr, "An error has occurred\n");
+                fprintf(stderr, "Command not found: %s\n", args[0]);
+                free(input);
                 exit(EXIT_FAILURE);
             }
         }
@@ -108,6 +99,8 @@ int main(int argc, char *argv[])
             // Parent process
             wait(NULL);
         }
+
+        free(input);
     }
 
     return 0;

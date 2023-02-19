@@ -42,8 +42,7 @@ int main() {
         pid_t pid = fork();
         if (pid == 0) {
             //child process
-            execvp(argv[0], argv);
-            //if execvp fails, print an error message
+            execv(argv[0], argv);
             printf("%s: command not found\n", argv[0]);
             exit(1);
         } else {

@@ -73,8 +73,9 @@ int main(int argc, char *argv[])
 {
     int interactive = (argc == 1) ? 1 : 0;
     FILE *input_file = NULL;
+    path("/bin")
 
-    if (!interactive)
+        if (!interactive)
     {
         if (argc != 2)
         {
@@ -159,27 +160,29 @@ int main(int argc, char *argv[])
             pid_t pid = fork();
             if (pid == 0)
             {
-                char *executable_path = getenv(args[0], path);
-                if (executable_path == NULL)
+                char *path_env = getenv("PATH");
+                char *path = strdup(path_env); // make a copy of the PATH env string
+                char *dir = strtok(path, ":"); // split the path string into directories using ":" as delimiter
+
+                while (dir != NULL)
                 {
-                    fprintf(stderr, "Command not found: %s\n", args[0]);
-                    exit(EXIT_FAILURE);
-                }
-                else
-                {
-                    char *new_args[900];
-                    int i;
-                    for (i = 0; args[i] != NULL; i++)
-                    {
-                        new_args[i] = args[i];
+                    char full_path[strlen(dir) + strlen(args[0]) + 2];
+                    sprintf(full_path, "%s/%s", dir, args[0]);
+                    if (access(full_path, X_OK) == 0)
+                    { // check if the file exists and is executable
+                        if (execv(full_path, new_args) == -1)
+                        {
+                            fprintf(stderr, "An error occurred while executing the command\n");
+                            exit(EXIT_FAILURE);
+                        }
+                        break; // exit the loop once the command is found and executed
                     }
-                    new_args[i] = NULL;
-                    if (execv(executable_path, new_args) == -1)
-                    {
-                        fprintf(stderr, "An error occurred while executing the command\n");
-                        exit(EXIT_FAILURE);
-                    }
+                    dir = strtok(NULL, ":"); // get the next directory in PATH
                 }
+
+                // if the loop completes without finding the command, print an error message
+                fprintf(stderr, "Command not found: %s\n", args[0]);
+                exit(EXIT_FAILURE);
             }
             else if (pid < 0)
             {

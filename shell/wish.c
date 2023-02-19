@@ -158,49 +158,67 @@ int main(int argc, char *argv[])
         // execute shit
         else
         {
-            pid_t pid = fork();
-            if (pid == 0)
+            // Check if the command has a .sh file extension
+            int len = strlen(args[0]);
+            if (len > 3 && strcmp(args[0] + len - 3, ".sh") == 0)
             {
-                char *new_args[MAX_ARGS];
-                int i;
-                for (i = 0; args[i] != NULL; i++)
+                // Execute shell script with /bin/bash
+                args[0][len - 3] = '\0'; // Remove .sh extension from args[0]
+                char *new_args[len + 1];
+                new_args[0] = "/bin/bash";
+                for (int i = 1; args[i - 1] != NULL; i++)
                 {
-                    new_args[i] = args[i];
+                    new_args[i] = args[i - 1];
                 }
-                new_args[i] = NULL;
-
-                char *path_env = getenv("PATH");
-                char *path = strdup(path_env); // make a copy of the PATH env string
-                char *dir = strtok(path, ":"); // split the path string into directories using ":" as delimiter
-
-                while (dir != NULL)
-                {
-                    char full_path[strlen(dir) + strlen(args[0]) + 2];
-                    sprintf(full_path, "%s/%s", dir, args[0]);
-                    if (access(full_path, X_OK) == 0)
-                    { // check if the file exists and is executable
-                        if (execv(full_path, new_args) == -1)
-                        {
-                            fprintf(stderr, "An error occurred while executing the command\n");
-                            exit(EXIT_FAILURE);
-                        }
-                        break; // exit the loop once the command is found and executed
-                    }
-                    dir = strtok(NULL, ":"); // get the next directory in PATH
-                }
-
-                // if the loop completes without finding the command, print an error message
-                fprintf(stderr, "Command not found: %s\n", args[0]);
-                exit(EXIT_FAILURE);
-            }
-            else if (pid < 0)
-            {
-                perror("fork");
-                exit(EXIT_FAILURE);
+                new_args[len] = NULL;
+                execv("/bin/bash", new_args);
             }
             else
             {
-                wait(NULL);
+                pid_t pid = fork();
+                if (pid == 0)
+                {
+                    char *new_args[MAX_ARGS];
+                    int i;
+                    for (i = 0; args[i] != NULL; i++)
+                    {
+                        new_args[i] = args[i];
+                    }
+                    new_args[i] = NULL;
+
+                    char *path_env = getenv("PATH");
+                    char *path = strdup(path_env); // make a copy of the PATH env string
+                    char *dir = strtok(path, ":"); // split the path string into directories using ":" as delimiter
+
+                    while (dir != NULL)
+                    {
+                        char full_path[strlen(dir) + strlen(args[0]) + 2];
+                        sprintf(full_path, "%s/%s", dir, args[0]);
+                        if (access(full_path, X_OK) == 0)
+                        { // check if the file exists and is executable
+                            if (execv(full_path, new_args) == -1)
+                            {
+                                fprintf(stderr, "An error occurred while executing the command\n");
+                                exit(EXIT_FAILURE);
+                            }
+                            break; // exit the loop once the command is found and executed
+                        }
+                        dir = strtok(NULL, ":"); // get the next directory in PATH
+                    }
+
+                    // if the loop completes without finding the command, print an error message
+                    fprintf(stderr, "Command not found: %s\n", args[0]);
+                    exit(EXIT_FAILURE);
+                }
+                else if (pid < 0)
+                {
+                    perror("fork");
+                    exit(EXIT_FAILURE);
+                }
+                else
+                {
+                    wait(NULL);
+                }
             }
         }
     }

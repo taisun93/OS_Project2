@@ -68,11 +68,11 @@ int path(char *args[])
             perror("setenv");
             return 1;
         }
+        printf("New PATH: %s\n", new_path);
     }
 
     return 0;
 }
-
 
 int main(int argc, char *argv[])
 {

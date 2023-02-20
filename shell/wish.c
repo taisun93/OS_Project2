@@ -136,6 +136,11 @@ int main(int argc, char *argv[])
         char *token = strtok(input, " ");
         while (token != NULL && num_args < MAX_INPUT)
         {
+            // Trim leading whitespace from token
+            while (isspace(*token))
+            {
+                token++;
+            }
             if (strcmp(token, ">") != 0 && strstr(token, ">") != NULL)
             {
                 char *arg1, *arg2;

@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-            // fprintf(stdout, "getting line\n");
+            fprintf(stdout, "getting line\n");
             if (getline(&input, &input_len, input_file) == -1)
             {
                 break;

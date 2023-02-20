@@ -206,6 +206,7 @@ int main(int argc, char *argv[])
             if (dir == NULL)
             {
                 fprintf(stderr, "An error has occurred\n");
+                free(path);
                 continue;
             }
 

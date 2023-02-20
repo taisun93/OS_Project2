@@ -210,16 +210,16 @@ int main(int argc, char *argv[])
             }
 
             // can't end on >
-            if (strcmp(args[i-1], ">") != 0)
+            if (strcmp(args[i-1], ">") == 0)
             {
                 fprintf(stderr, "An error has occurred\n");
                 fucking_bother = 0;
                 break;
             }
-            else{
-                fprintf(stderr, "kill me %s\n", args[i-1]);
+            // else{
+            //     fprintf(stderr, "kill me %s\n", args[i-1]);
                 
-            }
+            // }
 
             // Check for shell redirection
             int fd = -1;

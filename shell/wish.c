@@ -129,11 +129,23 @@ int main(int argc, char *argv[])
         char *args[MAX_INPUT];
         int num_args = 0;
 
-        char *token, *rest;
-        rest = input;
-        while ((token = strsep(&rest, " ")) != NULL && num_args < MAX_INPUT)
+        char *token, *saveptr;
+        while ((token = strsep(&input_copy, " ")) != NULL && num_args < MAX_INPUT)
         {
-            if (strcmp(token, "") != 0)
+            if (strcmp(token, ">") == 0)
+            {
+                if ((token = strsep(&input_copy, " ")) != NULL && num_args < MAX_INPUT)
+                {
+                    args[num_args++] = ">";
+                    args[num_args++] = token;
+                }
+                else
+                {
+                    fprintf(stderr, "Missing output file name\n");
+                    return -1;
+                }
+            }
+            else if (strlen(token) > 0)
             {
                 args[num_args++] = token;
             }

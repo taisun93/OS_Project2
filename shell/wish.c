@@ -182,7 +182,8 @@ int main(int argc, char *argv[])
                     { // check if the file exists and is executable
                         if (strlen(args[0]) > 3 && strcmp(args[0] + strlen(args[0]) - 3, ".sh") == 0)
                         {
-                            execv("/bin/bash", full_path);
+                            char *sh_args[] = {"/bin/bash", full_path, NULL};
+                            execv("/bin/bash", sh_args);
                         }
                         else if (execv(full_path, new_args) == -1)
                         {

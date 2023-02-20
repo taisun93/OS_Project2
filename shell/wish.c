@@ -132,6 +132,7 @@ int main(int argc, char *argv[])
 
         while (*input == '\t' || *input == ' ' || *input == '\n')
         {
+            fprintf(stderr, "stripping away %s \n", input);
             input++;
         }
 

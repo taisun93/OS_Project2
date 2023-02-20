@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
             token = strtok(NULL, " \n");
         }
 
-        fprintf(stderr, "num args %d\n", num_args);
+        // fprintf(stderr, "num args %d\n", num_args);
         args[num_args] = NULL; // Set last argument to NULL
 
         for (int i = 0; i < num_args; i++)
@@ -178,6 +178,7 @@ int main(int argc, char *argv[])
 
         if (args[0] == NULL)
         {
+            fprintf(stderr, "not exiting\n");
         }
         else if (strcmp(args[0], "exit") == 0)
         {

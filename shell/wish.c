@@ -173,8 +173,8 @@ int main(int argc, char *argv[])
             int i;
             for (i = 0; args[i] != NULL; i++)
             {
-                fprintf(stdout, "start start %s \n", args[i]);
-                if (strcmp(args[i], ">") != 0)
+                // fprintf(stdout, "start start %s \n", args[i]);
+                if (strcmp(args[i], ">") == 0)
                 {
                     if (redirect)
                     {
@@ -184,19 +184,9 @@ int main(int argc, char *argv[])
                     redirect = 1;
                 }
                 new_args[i] = args[i];
-                fprintf(stdout, "blah %s \n", args[i]);
+                // fprintf(stdout, "blah %s \n", args[i]);
             }
-            int j;
-            {
-                fprintf(stdout, "bfore null new_args[%d]: %s\n", j, new_args[j]);
-            }
-
             new_args[i + 1] = NULL;
-
-            for (j = 0; new_args[j] != NULL; j++)
-            {
-                fprintf(stdout, "new_args[%d]: %s\n", j, new_args[j]);
-            }
 
             char *path_env = getenv("PATH");
             char *path = strdup(path_env);

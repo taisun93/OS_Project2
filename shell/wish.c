@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
         input_file = fopen(argv[1], "r");
         if (input_file == NULL)
         {
-            perror("fopen");
+            fprintf(stderr, "An error has occurred\n");
             exit(EXIT_FAILURE);
         }
     }

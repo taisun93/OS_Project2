@@ -129,6 +129,7 @@ int main(int argc, char *argv[])
         }
 
         // tokenization
+
         while (*input == '\t' || *input == '\n')
         {
             input++;
@@ -145,6 +146,8 @@ int main(int argc, char *argv[])
         fprintf(stderr, "getting line%s\n", input);
         char *args[MAX_INPUT];
         int num_args = 0;
+
+        char *token = strtok(input, " ");
         while (token != NULL && num_args < MAX_INPUT)
         {
             // fprintf(stderr, "token here %s \n", token);

@@ -210,12 +210,13 @@ int main(int argc, char *argv[])
             }
 
             // can't end on >
-            // if (strcmp(args[i-1], ">") == 0)
-            // {
-            //     fprintf(stderr, "An error has occurred\n");
-            //     fucking_bother = 0;
-            //     break;
-            // }
+            if (strcmp(args[i-1], ">") == 0)
+            {
+                fprintf(stderr, "An error has occurred\n");
+                fucking_bother = 0;
+                free(input);
+                break;
+            }
 
 
             // Check for shell redirection

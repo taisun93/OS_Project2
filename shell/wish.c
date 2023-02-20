@@ -191,6 +191,13 @@ int main(int argc, char *argv[])
                         int fd = -1;
                         if (i >= 2 && args[i - 2] != NULL && strcmp(args[i - 2], ">") == 0)
                         {
+
+                            if (args[i + 1] == NULL)
+                            {
+                                fprintf(stderr, "An error has occurred\n");
+                                continue; // continue with the loop
+                            }
+
                             char *filename = args[i - 1];
                             fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC);
                             {

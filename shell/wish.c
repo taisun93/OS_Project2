@@ -169,8 +169,10 @@ int main(int argc, char *argv[])
             token = strtok(NULL, " ");
         }
 
+        fprintf(stderr, "num args %d\n", num_args);
         args[num_args] = NULL; // Set last argument to NULL
-        
+        fprintf(stderr, "num args %s\n", args[0]);
+
         if (args[0] == NULL)
         {
 

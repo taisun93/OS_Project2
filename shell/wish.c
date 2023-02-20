@@ -3,6 +3,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <fcntl.h>
+
 
 #define MAX_INPUT 512
 #define MAX_ARGS 900
@@ -190,8 +192,7 @@ int main(int argc, char *argv[])
                         if (args[i - 2] != NULL && strcmp(args[i - 2], ">") == 0)
                         {
                             char *filename = args[i - 1];
-                            fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
-                            if (fd == -1)
+                            fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC);
                             {
                                 fprintf(stderr, "Unable to open output file %s: %s\n", filename, strerror(errno));
                                 exit(EXIT_FAILURE);

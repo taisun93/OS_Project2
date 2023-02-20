@@ -171,11 +171,14 @@ int main(int argc, char *argv[])
 
         fprintf(stderr, "num args %d\n", num_args);
         args[num_args] = NULL; // Set last argument to NULL
-        fprintf(stderr, "num args %s\n", args[0]);
+        
+        for (int i = 0; i < num_args; i++)
+        {
+            printf(" args here %d, %s\n", i, args[i]);
+        }
 
         if (args[0] == NULL)
         {
-
         }
         else if (strcmp(args[0], "exit") == 0)
         {

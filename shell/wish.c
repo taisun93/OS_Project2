@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
         char *args[MAX_INPUT];
         int num_args = 0;
         // fprintf(stdout, "-1\n");
-
+        char *arg;
         while ((arg = strsep(&input, " ")) != NULL && num_args < MAX_INPUT)
         {
             if (strcmp(arg, ">") != 0 && strstr(arg, ">") != NULL)

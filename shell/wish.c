@@ -201,6 +201,7 @@ int main(int argc, char *argv[])
             int fd = -1;
             if (i >= 2 && args[i - 2] != NULL && strstr(args[i - 2], ">") != NULL)
             {
+                fprintf(stderr, "dafuq %s\n", args);
                 int redirIndex = i - 2;
                 while (redirIndex > 0 && strcmp(args[redirIndex], ">") != 0)
                 {

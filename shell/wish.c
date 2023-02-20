@@ -137,12 +137,14 @@ int main(int argc, char *argv[])
                 continue; // skip over empty tokens
             }
 
-            if (strstr(arg, ">") != NULL)
+            if (strcmp(arg, ">") == 0)
             {
-                char *filename = strsep(&arg, ">");
-                args[num_args++] = filename;
+                char *arg1, *arg2;
+                arg1 = strsep(&arg, ">");
+                arg2 = strsep(&arg, ">");
+                args[num_args++] = arg1;
                 args[num_args++] = ">";
-                args[num_args++] = arg;
+                args[num_args++] = arg2;
             }
             else
             {
@@ -152,7 +154,7 @@ int main(int argc, char *argv[])
 
         args[num_args] = NULL; // null terminate arguments
 
-        //start parsing
+        // start parsing
         if (strcmp(args[0], "exit") == 0)
         {
             if (args[1] != NULL)

@@ -174,6 +174,7 @@ int main(int argc, char *argv[])
             int i;
             for (i = 0; args[i] != NULL; i++)
             {
+                fprintf(stderr, "blah blah %s", args[i])
                 if (strcmp(args[i], ">") != 0)
                 {
                     if(redirect){
@@ -209,7 +210,7 @@ int main(int argc, char *argv[])
             }
 
             // can't end on >
-            if (strcmp(args[i - 1], ">") != 0)
+            if (strcmp(args[i], ">") != 0)
             {
                 fprintf(stderr, "An error has occurred\n");
                 fucking_bother = 0;

@@ -173,7 +173,6 @@ int main(int argc, char *argv[])
             int i;
             for (i = 0; args[i] != NULL; i++)
             {
-                // fprintf(stdout, "blah %s \n", args[i]);
                 if (strcmp(args[i], ">") != 0)
                 {
                     if (redirect)
@@ -184,6 +183,7 @@ int main(int argc, char *argv[])
                     redirect = 1;
                 }
                 new_args[i] = args[i];
+                fprintf(stdout, "blah %s \n", args[i]);
             }
             int j;
             {

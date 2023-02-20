@@ -151,8 +151,11 @@ int main(int argc, char *argv[])
         while (token != NULL && num_args < MAX_INPUT)
         {
             fprintf(stderr, "token here %s \n", token);
-            // Trim leading whitespace from token
-
+            // Skip whitespace tokens
+            while (strlen(token) == 0 && token != NULL)
+            {
+                token = strtok(NULL, " ");
+            }
             if (strcmp(token, ">") != 0 && strstr(token, ">") != NULL)
             {
                 char *arg1, *arg2;
@@ -171,7 +174,7 @@ int main(int argc, char *argv[])
 
         fprintf(stderr, "num args %d\n", num_args);
         args[num_args] = NULL; // Set last argument to NULL
-        
+
         for (int i = 0; i < num_args; i++)
         {
             printf(" args here %d, %s\n", i, args[i]);

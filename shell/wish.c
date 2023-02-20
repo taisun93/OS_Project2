@@ -79,6 +79,28 @@ int path(char *args[])
     return 0;
 }
 
+char *strtrim(char *str)
+{
+    char *end;
+
+    // Trim leading spaces
+    while (isspace((unsigned char)*str))
+        str++;
+
+    if (*str == 0) // All spaces?
+        return str;
+
+    // Trim trailing spaces
+    end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char)*end))
+        end--;
+
+    // Write new null terminator character
+    end[1] = '\0';
+
+    return str;
+}
+
 int main(int argc, char *argv[])
 {
 
@@ -163,7 +185,7 @@ int main(int argc, char *argv[])
             }
             else
             {
-                args[num_args++] = token;
+                args[num_args++] = strtrim(token);
             }
             token = strtok(NULL, " \n");
         }
@@ -201,7 +223,6 @@ int main(int argc, char *argv[])
         // execute shit
         else
         {
-            fprintf(stderr, "executing\n");
             int redirect = 0;
             // Child process
             char *new_args[MAX_ARGS];

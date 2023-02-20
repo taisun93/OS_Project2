@@ -180,7 +180,10 @@ int main(int argc, char *argv[])
                     {
                         redirect = 2;
                     }
-                    redirect = 1;
+                    else
+                    {
+                        redirect = 1;
+                    }
                 }
                 new_args[i] = args[i];
                 // fprintf(stdout, "blah %s \n", args[i]);

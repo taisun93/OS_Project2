@@ -6,7 +6,6 @@
 #include <fcntl.h>
 #include <errno.h>
 
-
 #define MAX_INPUT 512
 #define MAX_ARGS 900
 
@@ -190,7 +189,7 @@ int main(int argc, char *argv[])
                     {
                         // Check for shell redirection
                         int fd = -1;
-                        if (args[i - 2] != NULL && strcmp(args[i - 2], ">") == 0)
+                        if (i >= 2 && args[i - 2] != NULL && strcmp(args[i - 2], ">") == 0)
                         {
                             char *filename = args[i - 1];
                             fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC);
@@ -220,7 +219,7 @@ int main(int argc, char *argv[])
                             exit(EXIT_FAILURE);
                         }
 
-                        if (args[i - 2] != NULL && strcmp(args[i - 2], ">") == 0)
+                        if (i >= 2 && args[i - 2] != NULL && strcmp(args[i - 2], ">") == 0)
                         {
                             close(fd);
                         }

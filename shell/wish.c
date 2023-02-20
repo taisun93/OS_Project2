@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <ctype.h>
 
 #define MAX_INPUT 512
 #define MAX_ARGS 900

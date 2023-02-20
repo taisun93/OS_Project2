@@ -198,7 +198,8 @@ int main(int argc, char *argv[])
                         redirect = 1;
                         if (args[i + 1] != NULL)
                         {
-                            char *p = args[i + 1] while (*p)
+                            char *p = args[i + 1];
+                            while (*p)
                             {
                                 if (*p == '/')
                                 {
@@ -208,7 +209,7 @@ int main(int argc, char *argv[])
                                 }
                                 p++;
                             }
-                            
+
                             fd = open(args[i + 1], O_WRONLY | O_CREAT | O_TRUNC, 0666);
                         }
                     }

@@ -44,6 +44,7 @@ int path(char *args[])
             perror("setenv");
             return 1;
         }
+        fprintf(stdout, "adfssfd\n");
     }
     else
     {

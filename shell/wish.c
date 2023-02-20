@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
             char *path_env = getenv("PATH");
             char *path = strdup(path_env);
             char *dir = strtok(path, ":");
-            char full_path[900];
+            char full_path[90];
             while (dir != NULL)
             {
                 sprintf(full_path, "%s/%s", dir, args[0]);

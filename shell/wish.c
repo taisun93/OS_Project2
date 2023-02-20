@@ -170,8 +170,11 @@ int main(int argc, char *argv[])
         }
 
         args[num_args] = NULL; // Set last argument to NULL
-        fprintf(stderr, "blah blah \n");
-        if (strcmp(args[0], "exit") == 0)
+        
+        if(args[0] == NULL){
+            fprintf(stderr, "blah blah \n");
+        }
+        else if (strcmp(args[0], "exit") == 0)
         {
             if (args[1] != NULL)
             {

@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
                         int fuckingIssues = 0;
                         if (i >= 2 && args[i - 2] != NULL && strstr(args[i - 2], ">") != NULL)
                         {
-                            fuckingIssues = 1;
+                            
                             int redirIndex = i - 2;
                             while (redirIndex > 0 && strcmp(args[redirIndex], ">") != 0)
                             {
@@ -201,6 +201,7 @@ int main(int argc, char *argv[])
 
                             if (strcmp(args[redirIndex], ">") != 0 || args[i - 1] == NULL)
                             {
+                                fuckingIssues = 1;
                                 fprintf(stderr, "Invalid command syntax\n");
                                 break;
                             }
@@ -230,7 +231,7 @@ int main(int argc, char *argv[])
                             new_args[i - 2] = NULL;
                             new_args[i - 1] = NULL;
                             i -= 2;
-                            fuckingIssues = 0;
+                            
                         }
 
                         if (!fuckingIssues && execv(full_path, new_args) == -1)

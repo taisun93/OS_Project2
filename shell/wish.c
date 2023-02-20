@@ -132,8 +132,7 @@ int main(int argc, char *argv[])
         int num_args = 0;
         // fprintf(stdout, "-1\n");
 
-        char *token = strtok(input, " ");
-        while (token != NULL && num_args < MAX_INPUT)
+        while ((arg = strsep(&input_copy, " ")) != NULL && num_args < MAX_INPUT)
         {
             if (strcmp(arg, ">") != 0 && strstr(arg, ">") != NULL)
             {
@@ -144,8 +143,10 @@ int main(int argc, char *argv[])
                 args[num_args++] = ">";
                 args[num_args++] = arg2;
             }
-            args[num_args++] = token;
-            token = strtok(NULL, " ");
+            else
+            {
+                args[num_args++] = arg;
+            }
         }
         args[num_args] = NULL; // Set last argument to NULL
 

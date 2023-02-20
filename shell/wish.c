@@ -173,11 +173,11 @@ int main(int argc, char *argv[])
         
         if (args[0] == NULL)
         {
-            free(input);
-            fprintf(stderr, "blah blah \n");
+
         }
         else if (strcmp(args[0], "exit") == 0)
         {
+            fprintf(stderr, "We are exiting\n");
             if (args[1] != NULL)
             {
                 // if args are given for exit

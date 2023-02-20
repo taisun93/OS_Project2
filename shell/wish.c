@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
         // execute shit
         else
         {
-            fprintf(stdout, "executing");
+
             pid_t pid = fork();
             if (pid == 0)
             {
@@ -186,6 +186,7 @@ int main(int argc, char *argv[])
                 {
                     char full_path[strlen(dir) + strlen(args[0]) + 2];
                     sprintf(full_path, "%s/%s", dir, args[0]);
+                    fprintf(stderr, full_path);
                     if (access(full_path, X_OK) == 0)
                     {
                         // Check for shell redirection

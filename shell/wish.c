@@ -137,6 +137,7 @@ int main(int argc, char *argv[])
         char *token = strtok(input, " ");
         while (token != NULL && num_args < MAX_INPUT)
         {
+            fprintf(stdout, "blah %s \n", token);
             // Trim leading whitespace from token
             while (isspace(*token))
             {
@@ -157,6 +158,7 @@ int main(int argc, char *argv[])
             // gets next token
             token = strtok(NULL, " ");
         }
+        fprintf(stdout, "-1\n");
         args[num_args] = NULL; // Set last argument to NULL
 
         if (strcmp(args[0], "exit") == 0)
@@ -193,7 +195,7 @@ int main(int argc, char *argv[])
 
             for (i = 0; args[i] != NULL; i++)
             {
-                fprintf(stdout, "start start %s \n", args[i]);
+                // fprintf(stdout, "start start %s \n", args[i]);
                 if (strcmp(args[i], ">") == 0)
                 {
                     if (redirect)

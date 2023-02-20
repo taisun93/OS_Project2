@@ -176,11 +176,23 @@ int main(int argc, char *argv[])
                 // fprintf(stdout, "start start %s \n", args[i]);
                 if (strcmp(args[i], ">") == 0)
                 {
+                    if (redirect)
+                    {
+                        redirect = 2;
+                    }
                     redirect = 1;
                 }
                 new_args[i] = args[i];
                 // fprintf(stdout, "blah %s \n", args[i]);
             }
+
+            // can't chain redirects
+            if (redirect > 1)
+            {
+                fprintf(stderr, "An error has occurred\n");
+                continue;
+            }
+
             new_args[i + 1] = NULL;
 
             char *path_env = getenv("PATH");
@@ -212,12 +224,12 @@ int main(int argc, char *argv[])
                 continue;
             }
 
-            // too many elements on redirect
-            if(redirect && i >= 3){
+            // penultimate in a redirect needs to be a >
+            if (redirect && strcmp(args[i - 2], ">") != 0)
+            {
                 fprintf(stderr, "An error has occurred\n");
                 continue;
             }
-
 
             pid_t pid = fork();
             if (pid == 0)

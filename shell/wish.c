@@ -172,9 +172,9 @@ int main(int argc, char *argv[])
             // Child process
             char *new_args[MAX_ARGS];
             int i;
-            for (i = 0; args[i] != NULL; i++)
+            for (i = 0; args[i-1] != NULL; i++)
             {
-                fprintf(stderr, "blah blah %s", args[i]);
+                fprintf(stderr, "blah blah %s \n", args[i]);
                 if (strcmp(args[i], ">") != 0)
                 {
                     if(redirect){
@@ -210,7 +210,7 @@ int main(int argc, char *argv[])
             }
 
             // can't end on >
-            if (strcmp(args[i], ">") != 0)
+            if (strcmp(args[i-1], ">") != 0)
             {
                 fprintf(stderr, "An error has occurred\n");
                 fucking_bother = 0;

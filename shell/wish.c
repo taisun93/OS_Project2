@@ -199,17 +199,17 @@ int main(int argc, char *argv[])
                         redirect = 1;
                         if (args[i + 1] != NULL)
                         {
-                            char *p = args[i + 1];
-                            while (*p)
-                            {
-                                if (*p == '/')
-                                {
-                                    *p = '\0';
-                                    mkdir(args[i + 1], 0777);
-                                    *p = '/';
-                                }
-                                p++;
-                            }
+                            // char *p = args[i + 1];
+                            // while (*p)
+                            // {
+                            //     if (*p == '/')
+                            //     {
+                            //         *p = '\0';
+                            //         mkdir(args[i + 1], 0777);
+                            //         *p = '/';
+                            //     }
+                            //     p++;
+                            // }
 
                             fd = open(args[i + 1], O_WRONLY | O_CREAT | O_TRUNC, 0666);
                         }
@@ -232,6 +232,8 @@ int main(int argc, char *argv[])
             char *path = strdup(path_env);
             char *dir = strtok(path, ":");
             char full_path[90];
+            int saved_stdout = dup(1);
+
             while (dir != NULL)
             {
                 sprintf(full_path, "%s/%s", dir, args[0]);
@@ -297,6 +299,7 @@ int main(int argc, char *argv[])
 
             if (redirect)
             {
+                dup2(saved_stdout, 1)
                 close(fd);
             }
         }

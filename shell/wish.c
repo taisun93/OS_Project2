@@ -151,10 +151,6 @@ int main(int argc, char *argv[])
         while (token != NULL && num_args < MAX_INPUT)
         {
             // Skip whitespace tokens
-            while (isspace(*token))
-            {
-                token++;
-            }
 
             if (strcmp(token, ">") != 0 && strstr(token, ">") != NULL)
             {
@@ -169,7 +165,7 @@ int main(int argc, char *argv[])
             {
                 args[num_args++] = token;
             }
-            token = strtok(NULL, " ");
+            token = strtok(NULL, " \n");
         }
 
         fprintf(stderr, "num args %d\n", num_args);

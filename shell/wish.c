@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-            // fprintf(stdout, "getting line\n");
+            fprintf(stderr, "reading in \n");
             if (getline(&input, &input_len, input_file) == -1)
             {
                 break;
@@ -135,8 +135,7 @@ int main(int argc, char *argv[])
             input++;
         }
 
-        // input[strcspn(input, "\n")] = '\0';
-        // fprintf(stderr, "getting line%s\n", input);
+        fprintf(stderr, "getting line%s\n", input);
         char *args[MAX_INPUT];
         int num_args = 0;
 

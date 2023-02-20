@@ -69,7 +69,7 @@ int path(char *args[])
         else
         {
             // Echo the new path
-            fprintf(stdout, "New PATH=%s\n", new_path);
+            // fprintf(stdout, "New PATH=%s\n", new_path);
         }
     }
     return 0;

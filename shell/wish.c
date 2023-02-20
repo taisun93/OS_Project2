@@ -257,7 +257,7 @@ int main(int argc, char *argv[])
             pid_t pid = fork();
             if (pid == 0)
             {
-                fprintf(stdout, "%s%s", full_path, new_args)
+                fprintf(stdout, "%s%s", full_path, new_args);
                 if (execv(full_path, new_args) == -1)
                 {
                     fprintf(stderr, "An error has occurred\n");

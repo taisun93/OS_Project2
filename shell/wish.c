@@ -201,6 +201,7 @@ int main(int argc, char *argv[])
         // execute shit
         else
         {
+            fprintf(stderr, "executing\n");
             int redirect = 0;
             // Child process
             char *new_args[MAX_ARGS];

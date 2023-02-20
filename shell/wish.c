@@ -129,44 +129,47 @@ int main(int argc, char *argv[])
         char *args[MAX_INPUT];
         int num_args = 0;
 
-        char *token, *str;
-        str = input;
-        while ((token = strsep(&str, " ")) != NULL && num_args < MAX_INPUT)
+        char *arg = NULL;
+        while ((arg = strsep(&input_copy, " ")) != NULL && num_args < MAX_INPUT)
         {
-            if (token[0] == '\0')
-                continue; // ignore empty tokens
-
-            if (token[0] == '>')
+            if (*arg == '\0')
             {
-                args[num_args++] = token;
+                continue; // skip over empty tokens
+            }
+
+            if (*arg == '>')
+            {
+                // add ">" as a separate argument
+                args[num_args++] = arg;
             }
             else
             {
-                char *ptr = token;
-                while ((ptr = strpbrk(ptr, ">")) != NULL)
+                char *filename = NULL;
+                char *ptr = arg;
+
+                while (*ptr != '\0')
                 {
-                    // Found >, break token into two
-                    if (ptr == token)
+                    if (*ptr == '>')
                     {
-                        args[num_args++] = ">";
-                    }
-                    else
-                    {
-                        *ptr = '\0';
-                        args[num_args++] = token;
-                        args[num_args++] = ">";
-                        token = ptr + 1;
+                        // separate filename and add as separate argument
+                        *ptr++ = '\0';
+                        filename = ptr;
                         break;
                     }
                     ptr++;
                 }
-                if (ptr == NULL)
+
+                // add current argument (which might have been split from ">") and filename as separate arguments
+                args[num_args++] = arg;
+                if (filename != NULL)
                 {
-                    args[num_args++] = token;
+                    args[num_args++] = ">";
+                    args[num_args++] = filename;
+                    break;
                 }
             }
         }
-        args[num_args] = NULL; // Set last argument to NULL
+        args[num_args] = NULL; // null terminate arguments
 
         if (strcmp(args[0], "exit") == 0)
         {

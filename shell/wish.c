@@ -167,7 +167,6 @@ int main(int argc, char *argv[])
         // execute shit
         else
         {
-            int fucking_bother = 1;
             int redirect = 0;
             // Child process
             char *new_args[MAX_ARGS];
@@ -177,8 +176,9 @@ int main(int argc, char *argv[])
                 // fprintf(stderr, "blah blah %s \n", args[i]);
                 if (strcmp(args[i], ">") != 0)
                 {
-                    if(redirect){
-                        //too many redirects
+                    if (redirect)
+                    {
+                        // too many redirects
                         fucking_bother = 0;
                         fprintf(stderr, "An error has occurred\n");
                         break;
@@ -210,14 +210,12 @@ int main(int argc, char *argv[])
             }
 
             // can't end on >
-            if (strcmp(args[i-1], ">") == 0)
+            if (strcmp(args[i - 1], ">") == 0)
             {
                 fprintf(stderr, "An error has occurred\n");
-                fucking_bother = 0;
                 free(input);
                 break;
             }
-
 
             // Check for shell redirection
             int fd = -1;
@@ -233,7 +231,6 @@ int main(int argc, char *argv[])
                 if (strcmp(args[redirIndex], ">") != 0 || args[i - 1] == NULL || strcmp(args[i - 1], ">") != 0)
                 {
                     fprintf(stderr, "An error has occurred\n");
-                    fucking_bother = 0;
                     break;
                 }
 
@@ -257,32 +254,28 @@ int main(int argc, char *argv[])
                 i -= 2;
             }
 
-            fprintf(stderr, "do I bother? %d \n", fucking_bother);
-            if (fucking_bother)
+            pid_t pid = fork();
+            if (pid == 0)
             {
-                pid_t pid = fork();
-                if (pid == 0)
-                {
-                    if (execv(full_path, new_args) == -1)
-                    {
-                        fprintf(stderr, "An error has occurred\n");
-                        exit(EXIT_FAILURE);
-                    }
-                }
-                else if (pid < 0)
+                if (execv(full_path, new_args) == -1)
                 {
                     fprintf(stderr, "An error has occurred\n");
                     exit(EXIT_FAILURE);
                 }
-                else
-                {
-                    wait(NULL);
-                }
+            }
+            else if (pid < 0)
+            {
+                fprintf(stderr, "An error has occurred\n");
+                exit(EXIT_FAILURE);
+            }
+            else
+            {
+                wait(NULL);
+            }
 
-                if (fd != -1)
-                {
-                    close(fd);
-                }
+            if (fd != -1)
+            {
+                close(fd);
             }
         }
 

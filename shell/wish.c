@@ -265,11 +265,12 @@ int main(int argc, char *argv[])
             }
             else if (pid < 0)
             {
-                fprintf(stderr, "An error has occurred in the fork\n");
+                fprintf(stderr, "An error has occurred\n");
                 exit(EXIT_FAILURE);
             }
             else
             {
+                fprintf(stdout, "lolwut\n");
                 wait(NULL);
             }
         }

@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
                     if (redirect)
                     {
                         // too many redirects
-                        fucking_bother = 0;
+                        
                         fprintf(stderr, "An error has occurred\n");
                         break;
                     }

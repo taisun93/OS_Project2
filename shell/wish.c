@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
             {
                 args[num_args++] = token;
             }
-            //gets next token
+            // gets next token
             token = strtok(NULL, " ");
         }
         args[num_args] = NULL; // Set last argument to NULL
@@ -198,6 +198,17 @@ int main(int argc, char *argv[])
                         redirect = 1;
                         if (args[i + 1] != NULL)
                         {
+                            char *p = args[i + 1] while (*p)
+                            {
+                                if (*p == '/')
+                                {
+                                    *p = '\0';
+                                    mkdir(filename, 0777);
+                                    *p = '/';
+                                }
+                                p++;
+                            }
+                            
                             fd = open(args[i + 1], O_WRONLY | O_CREAT | O_TRUNC, 0666);
                         }
                     }
@@ -281,10 +292,14 @@ int main(int argc, char *argv[])
 
                 wait(NULL);
             }
-            // close(fd);
+
+            if (redirect)
+            {
+                close(fd);
+            }
         }
     }
-    // close(fd);
+
     free(input);
 
     return 0;

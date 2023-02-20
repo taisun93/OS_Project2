@@ -128,6 +128,7 @@ int main(int argc, char *argv[])
         }
 
         // tokenization
+        fprintf(stdout, "before input \n");
         input[strcspn(input, "\n")] = '\0';
         // fprintf(stdout, "getting line%s\n", input);
         char *args[MAX_INPUT];

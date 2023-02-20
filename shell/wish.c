@@ -205,7 +205,7 @@ int main(int argc, char *argv[])
                                 if (*p == '/')
                                 {
                                     *p = '\0';
-                                    mkdir(filename, 0777);
+                                    mkdir(args[i + 1], 0777);
                                     *p = '/';
                                 }
                                 p++;

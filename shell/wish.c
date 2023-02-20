@@ -180,7 +180,11 @@ int main(int argc, char *argv[])
                     sprintf(full_path, "%s/%s", dir, args[0]);
                     if (access(full_path, X_OK) == 0)
                     { // check if the file exists and is executable
-                        if (execv(full_path, new_args) == -1)
+                        if (strlen(args[0]) > 3 && strcmp(args[0] + strlen(args[0]) - 3, ".sh") == 0)
+                        {
+                            execv("/bin/bash", full_path);
+                        }
+                        else if (execv(full_path, new_args) == -1)
                         {
                             fprintf(stderr, "An error occurred while executing the command\n");
                             exit(EXIT_FAILURE);

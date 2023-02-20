@@ -106,6 +106,8 @@ int main(int argc, char *argv[])
     char *input = NULL;
     size_t input_len = 0;
 
+    fprintf(stdout, "before while loop \n");
+
     while (1)
     {
         // Gets next command

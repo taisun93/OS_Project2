@@ -221,18 +221,6 @@ int main(int argc, char *argv[])
                         redirect = 1;
                         if (args[i + 1] != NULL)
                         {
-                            // char *p = args[i + 1];
-                            // while (*p)
-                            // {
-                            //     if (*p == '/')
-                            //     {
-                            //         *p = '\0';
-                            //         mkdir(args[i + 1], 0777);
-                            //         *p = '/';
-                            //     }
-                            //     p++;
-                            // }
-
                             fd = open(args[i + 1], O_WRONLY | O_CREAT | O_TRUNC, 0666);
                         }
                     }
@@ -265,7 +253,7 @@ int main(int argc, char *argv[])
                 }
                 dir = strtok(NULL, ":");
             }
-            free(path);
+            // free(path);
 
             // can't find command
             if (dir == NULL)

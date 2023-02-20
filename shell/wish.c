@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 
     char *input = NULL;
     size_t input_len = 0;
-    fprintf(stderr, "before while\n");
+
     while (1)
     {
         // Gets next command
@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
 
         // tokenization
         input[strcspn(input, "\n")] = '\0';
-        // fprintf(stdout, "getting line%s\n", input);
+        fprintf(stderr, "getting line%s\n", input);
         char *args[MAX_INPUT];
         int num_args = 0;
         // fprintf(stdout, "-1\n");
@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
         char *token = strtok(input, " ");
         while (token != NULL && num_args < MAX_INPUT)
         {
-            // fprintf(stdout, "blah %s \n", token);
+            fprintf(stderr, "token here %s \n", token);
             // Trim leading whitespace from token
             while (isspace(*token))
             {

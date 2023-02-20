@@ -170,10 +170,11 @@ int main(int argc, char *argv[])
         }
 
         args[num_args] = NULL; // Set last argument to NULL
-
+        
         if (args[0] == NULL)
         {
-            // fprintf(stderr, "blah blah \n");
+            free(input);
+            fprintf(stderr, "blah blah \n");
         }
         else if (strcmp(args[0], "exit") == 0)
         {
@@ -253,7 +254,7 @@ int main(int argc, char *argv[])
                 }
                 dir = strtok(NULL, ":");
             }
-            // free(path);
+            free(path);
 
             // can't find command
             if (dir == NULL)
@@ -315,11 +316,8 @@ int main(int argc, char *argv[])
             }
         }
     }
-    if (input != NULL)
-    {
-        /* code */
-        free(input);
-    }
+
+    free(input);
 
     return 0;
 }

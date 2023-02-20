@@ -152,10 +152,7 @@ int main(int argc, char *argv[])
         {
             fprintf(stderr, "token here %s \n", token);
             // Skip whitespace tokens
-            while (strlen(token) == 0 && token != NULL)
-            {
-                token = strtok(NULL, " ");
-            }
+
             if (strcmp(token, ">") != 0 && strstr(token, ">") != NULL)
             {
                 char *arg1, *arg2;
@@ -169,7 +166,11 @@ int main(int argc, char *argv[])
                 args[num_args++] = token;
             }
             // gets next token
-            token = strtok(NULL, " ");
+            while (*input == '\t' || *input == ' ' || *input == '\n')
+            {
+
+                token = strtok(NULL, " ");
+            }
         }
 
         fprintf(stderr, "num args %d\n", num_args);
@@ -186,19 +187,12 @@ int main(int argc, char *argv[])
         else if (strcmp(args[0], "exit") == 0)
         {
             fprintf(stderr, "We are exiting\n");
-            if (args[1] != NULL)
+
+            if (interactive)
             {
-                // if args are given for exit
-                fprintf(stderr, "An error has occurred\n");
+                break;
             }
-            else
-            {
-                if (interactive)
-                {
-                    break;
-                }
-                exit(0);
-            }
+            exit(0);
         }
         else if (strcmp(args[0], "cd") == 0)
         {

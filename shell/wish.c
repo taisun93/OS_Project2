@@ -150,8 +150,11 @@ int main(int argc, char *argv[])
 
         while (token != NULL && num_args < MAX_INPUT)
         {
-            fprintf(stderr, "token here %s \n", token);
             // Skip whitespace tokens
+            while (isspace(*token))
+            {
+                token++;
+            }
 
             if (strcmp(token, ">") != 0 && strstr(token, ">") != NULL)
             {
@@ -162,15 +165,11 @@ int main(int argc, char *argv[])
                 args[num_args++] = ">";
                 args[num_args++] = arg2;
             }
+            else
             {
                 args[num_args++] = token;
             }
-            // gets next token
-            while (*input == '\t' || *input == ' ' || *input == '\n')
-            {
-
-                token = strtok(NULL, " ");
-            }
+            token = strtok(NULL, " ");
         }
 
         fprintf(stderr, "num args %d\n", num_args);

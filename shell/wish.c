@@ -167,70 +167,25 @@ int main(int argc, char *argv[])
         // execute shit
         else
         {
-            // Check for shell redirection
-            int fd = -1;
-            int fuckingIssues = 0;
-            if (i >= 2 && args[i - 2] != NULL && strstr(args[i - 2], ">") != NULL)
+            // Child process
+            char *new_args[MAX_ARGS];
+            int i;
+            // fprintf(stdout, "1");
+            for (i = 0; args[i] != NULL; i++)
             {
-
-                int redirIndex = i - 2;
-                while (redirIndex > 0 && strcmp(args[redirIndex], ">") != 0)
-                {
-                    redirIndex--;
-                }
-
-                if (strcmp(args[redirIndex], ">") != 0 || args[i - 1] == NULL)
-                {
-                    fuckingIssues = 1;
-                    fprintf(stderr, "Invalid command syntax\n");
-                    break;
-                }
-
-                char *filename = args[i - 1];
-                fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC);
-                if (fd == -1)
-                {
-                    fprintf(stderr, "Unable to open output file %s: %s\n", filename, strerror(errno));
-                    exit(EXIT_FAILURE);
-                }
-
-                // Redirect standard output to file
-                // if (dup2(fd, STDOUT_FILENO) == -1)
-                // {
-                //     fprintf(stderr, "Unable to redirect standard output: %s\n", strerror(errno));
-                //     exit(EXIT_FAILURE);
-                // }
-
-                // Redirect standard error to file
-                if (dup2(fd, STDERR_FILENO) == -1)
-                {
-                    fprintf(stderr, "Unable to redirect standard error: %s\n", strerror(errno));
-                    exit(EXIT_FAILURE);
-                }
-
-                new_args[i - 2] = NULL;
-                new_args[i - 1] = NULL;
-                i -= 2;
-
+                new_args[i] = args[i];
             }
+            new_args[i] = NULL;
+            // fprintf(stdout, "2");
+            char *path_env = getenv("PATH");
+            char *path = strdup(path_env);
+            char *dir = strtok(path, ":");
+            // fprintf(stdout, "3");
 
             pid_t pid = fork();
             if (pid == 0)
             {
-                // Child process
-                char *new_args[MAX_ARGS];
-                int i;
-                // fprintf(stdout, "1");
-                for (i = 0; args[i] != NULL; i++)
-                {
-                    new_args[i] = args[i];
-                }
-                new_args[i] = NULL;
-                // fprintf(stdout, "2");
-                char *path_env = getenv("PATH");
-                char *path = strdup(path_env);
-                char *dir = strtok(path, ":");
-                // fprintf(stdout, "3");
+
                 while (dir != NULL)
                 {
                     char full_path[strlen(dir) + strlen(args[0]) + 2];
@@ -238,6 +193,53 @@ int main(int argc, char *argv[])
                     fprintf(stdout, "yo here's the path %s", full_path);
                     if (access(full_path, X_OK) == 0)
                     {
+                        // Check for shell redirection
+                        int fd = -1;
+                        int fuckingIssues = 0;
+                        if (i >= 2 && args[i - 2] != NULL && strstr(args[i - 2], ">") != NULL)
+                        {
+
+                            int redirIndex = i - 2;
+                            while (redirIndex > 0 && strcmp(args[redirIndex], ">") != 0)
+                            {
+                                redirIndex--;
+                            }
+
+                            if (strcmp(args[redirIndex], ">") != 0 || args[i - 1] == NULL)
+                            {
+                                fuckingIssues = 1;
+                                fprintf(stderr, "Invalid command syntax\n");
+                                break;
+                            }
+
+                            char *filename = args[i - 1];
+                            fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC);
+                            if (fd == -1)
+                            {
+                                fprintf(stderr, "Unable to open output file %s: %s\n", filename, strerror(errno));
+                                exit(EXIT_FAILURE);
+                            }
+
+                            // Redirect standard output to file
+                            // if (dup2(fd, STDOUT_FILENO) == -1)
+                            // {
+                            //     fprintf(stderr, "Unable to redirect standard output: %s\n", strerror(errno));
+                            //     exit(EXIT_FAILURE);
+                            // }
+
+                            // Redirect standard error to file
+                            if (dup2(fd, STDERR_FILENO) == -1)
+                            {
+                                fprintf(stderr, "Unable to redirect standard error: %s\n", strerror(errno));
+                                exit(EXIT_FAILURE);
+                            }
+
+                            new_args[i - 2] = NULL;
+                            new_args[i - 1] = NULL;
+                            i -= 2;
+
+                            fprintf(stdout, "Fucking issues: %d\n", fuckingIssues);
+                        }
 
                         fprintf(stdout, "Fucking issues again: %d\n", fuckingIssues);
 

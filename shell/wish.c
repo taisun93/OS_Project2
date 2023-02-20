@@ -132,18 +132,18 @@ int main(int argc, char *argv[])
 
         while (*input == '\t' || *input == ' ' || *input == '\n')
         {
-            if (*input == '\t')
-            {
-                fprintf(stderr, "stripping away t\n");
-            }
-            if (*input == ' ')
-            {
-                fprintf(stderr, "stripping away space\n");
-            }
-            if (*input == '\n')
-            {
-                fprintf(stderr, "stripping away n\n");
-            }
+            // if (*input == '\t')
+            // {
+            //     fprintf(stderr, "stripping away t\n");
+            // }
+            // if (*input == ' ')
+            // {
+            //     fprintf(stderr, "stripping away space\n");
+            // }
+            // if (*input == '\n')
+            // {
+            //     fprintf(stderr, "stripping away n\n");
+            // }
 
             input++;
         }
@@ -153,6 +153,13 @@ int main(int argc, char *argv[])
         int num_args = 0;
 
         char *token = strtok(input, " ");
+
+        if (token == NULL)
+        {
+            continue;
+        }
+        
+
         fprintf(stderr, "strtoked %s \n", token);
         while (token != NULL && num_args < MAX_INPUT)
         {

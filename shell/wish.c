@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
     {
         if (argc != 2)
         {
-            fprintf(stderr, "batch file fuckery\n");
+            fprintf(stderr, "An error has occurred\n");
             exit(EXIT_FAILURE);
         }
 

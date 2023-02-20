@@ -126,18 +126,19 @@ int main(int argc, char *argv[])
         }
 
         input[strcspn(input, "\n")] = '\0';
-        // fprintf(stdout, "getting line%s\n", input);
         char *args[MAX_INPUT];
         int num_args = 0;
-        // fprintf(stdout, "-1\n");
 
-        char *token = strtok(input, " ");
-        while (token != NULL && num_args < MAX_INPUT)
+        char *arg;
+        while ((arg = strsep(&input, " ")) != NULL && num_args < MAX_INPUT)
         {
-            args[num_args++] = token;
-            token = strtok(NULL, " ");
+            if (*arg == '\0')
+            {
+                continue; // skip empty strings
+            }
+            args[num_args++] = arg;
         }
-        args[num_args] = NULL; // Set last argument to NULL
+        args[num_args] = NULL; // set last argument to NULL
 
         if (strcmp(args[0], "exit") == 0)
         {

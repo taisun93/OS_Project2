@@ -185,57 +185,60 @@ int main(int argc, char *argv[])
                 {
                     char full_path[strlen(dir) + strlen(args[0]) + 2];
                     sprintf(full_path, "%s/%s", dir, args[0]);
-
-                    if (strchr(input_line, '>') != NULL)
-                    {
-                        // If ">" is in input_line, verify syntax for redirection
-                        for (int i = 0; i < num_args; i++)
-                        {
-                            if (strcmp(args[i], ">") == 0)
-                            {
-                                if (i == num_args - 1)
-                                {
-                                    // If ">" is last argument, output an error and skip this line
-                                    fprintf(stderr, "An error has occurred\n");
-                                    continue; // continue with the loop
-                                }
-                                char *filename = args[i + 1];
-                                int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC);
-                                if (fd == -1)
-                                {
-                                    fprintf(stderr, "Unable to open output file %s: %s\n", filename, strerror(errno));
-                                    continue; // continue with the loop
-                                }
-
-                                // Redirect standard output to file
-                                if (dup2(fd, STDOUT_FILENO) == -1)
-                                {
-                                    fprintf(stderr, "Unable to redirect standard output: %s\n", strerror(errno));
-                                    exit(EXIT_FAILURE);
-                                }
-
-                                // Redirect standard error to file
-                                if (dup2(fd, STDERR_FILENO) == -1)
-                                {
-                                    fprintf(stderr, "Unable to redirect standard error: %s\n", strerror(errno));
-                                    exit(EXIT_FAILURE);
-                                }
-                                close(fd);
-                                args[i] = NULL;
-                                args[i + 1] = NULL;
-                                break;
-                            }
-                        }
-                    }
-
                     if (access(full_path, X_OK) == 0)
                     {
+                        // Check for shell redirection
+                        int fd = -1;
+                        if (i >= 2 && args[i - 2] != NULL && strstr(args[i - 2], ">") != NULL)
+                        {
+                            int redirIndex = i - 2;
+                            while (redirIndex > 0 && strcmp(args[redirIndex], ">") != 0)
+                            {
+                                redirIndex--;
+                            }
+
+                            if (strcmp(args[redirIndex], ">") != 0 || args[i - 1] == NULL)
+                            {
+                                fprintf(stderr, "Invalid command syntax\n");
+                                continue;
+                            }
+
+                            char *filename = args[i - 1];
+                            fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC);
+                            if (fd == -1)
+                            {
+                                fprintf(stderr, "Unable to open output file %s: %s\n", filename, strerror(errno));
+                                exit(EXIT_FAILURE);
+                            }
+
+                            // Redirect standard output to file
+                            if (dup2(fd, STDOUT_FILENO) == -1)
+                            {
+                                fprintf(stderr, "Unable to redirect standard output: %s\n", strerror(errno));
+                                exit(EXIT_FAILURE);
+                            }
+
+                            // Redirect standard error to file
+                            if (dup2(fd, STDERR_FILENO) == -1)
+                            {
+                                fprintf(stderr, "Unable to redirect standard error: %s\n", strerror(errno));
+                                exit(EXIT_FAILURE);
+                            }
+                        }
+
                         if (execv(full_path, new_args) == -1)
                         {
                             fprintf(stderr, "An error occurred while executing the command\n");
                             exit(EXIT_FAILURE);
                         }
+
+                        if (i >= 2 && args[i - 2] != NULL && strcmp(args[i - 2], ">") == 0)
+                        {
+                            close(fd);
+                        }
+                        break;
                     }
+                    dir = strtok(NULL, ":");
                 }
 
                 fprintf(stderr, "An error has occurred\n");

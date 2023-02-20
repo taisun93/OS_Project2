@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-            fprintf(stderr, "reading in \n");
+            // fprintf(stderr, "reading in \n");
             if (getline(&input, &input_len, input_file) == -1)
             {
                 break;
@@ -135,19 +135,17 @@ int main(int argc, char *argv[])
             input++;
         }
 
-        fprintf(stderr, "getting line%s\n", input);
+        fprintf(stderr, "getting line\n");
         char *args[MAX_INPUT];
         int num_args = 0;
 
         char *token = strtok(input, " ");
+        fprintf(stderr, "strtoked \n");
         while (token != NULL && num_args < MAX_INPUT)
         {
             // fprintf(stderr, "token here %s \n", token);
             // Trim leading whitespace from token
-            while (isspace(*token))
-            {
-                token++;
-            }
+
             if (strcmp(token, ">") != 0 && strstr(token, ">") != NULL)
             {
                 char *arg1, *arg2;

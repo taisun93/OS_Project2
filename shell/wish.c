@@ -138,10 +138,10 @@ int main(int argc, char *argv[])
         while (token != NULL && num_args < MAX_INPUT)
         {
             // Trim leading whitespace from token
-            // while (isspace(*token))
-            // {
-            //     token++;
-            // }
+            while (isspace(*token))
+            {
+                token++;
+            }
             if (strcmp(token, ">") != 0 && strstr(token, ">") != NULL)
             {
                 char *arg1, *arg2;
@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
 
             for (i = 0; args[i] != NULL; i++)
             {
-                // fprintf(stdout, "start start %s \n", args[i]);
+                fprintf(stdout, "start start %s \n", args[i]);
                 if (strcmp(args[i], ">") == 0)
                 {
                     if (redirect)

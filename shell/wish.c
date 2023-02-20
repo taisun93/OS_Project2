@@ -269,7 +269,7 @@ int main(int argc, char *argv[])
             if (redirect)
             {
                 dup2(fd, STDOUT_FILENO);
-                // dup2(fd, STDERR_FILENO);
+                dup2(fd, STDERR_FILENO);
                 new_args[i - 2] = NULL;
                 new_args[i - 1] = NULL;
             }
@@ -281,7 +281,6 @@ int main(int argc, char *argv[])
                 if (execv(full_path, new_args) == -1)
                 {
                     fprintf(stderr, "An error has occurred\n");
-
                     exit(EXIT_FAILURE);
                 }
             }
@@ -299,8 +298,10 @@ int main(int argc, char *argv[])
 
             if (redirect)
             {
-                dup2(saved_stdout, 1);
                 close(fd);
+                // dup2(saved_stdout, 1);
+                dup2(saved_stdout, STDOUT_FILENO);
+                dup2(saved_stdout, STDERR_FILENO);
             }
         }
     }

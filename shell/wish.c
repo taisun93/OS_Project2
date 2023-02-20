@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
         }
 
         input[strcspn(input, "\n")] = '\0';
-
+        fprintf(stdout, "getting line%s\n", input);
         char *args[MAX_INPUT / 2 + 1];
         int num_args = 0;
         fprintf(stdout, "-1\n");

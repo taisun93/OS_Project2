@@ -185,9 +185,13 @@ int main(int argc, char *argv[])
                 }
                 new_args[i] = args[i];
             }
-            new_args[i+1] = NULL;
-
             int j;
+            {
+                fprintf(stdout, "bfore null new_args[%d]: %s\n", j, new_args[j]);
+            }
+
+            new_args[i + 1] = NULL;
+
             for (j = 0; new_args[j] != NULL; j++)
             {
                 fprintf(stdout, "new_args[%d]: %s\n", j, new_args[j]);
@@ -223,7 +227,6 @@ int main(int argc, char *argv[])
                 free(input);
                 break;
             }
-
 
             pid_t pid = fork();
             if (pid == 0)

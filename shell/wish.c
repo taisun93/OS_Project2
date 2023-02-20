@@ -267,7 +267,7 @@ int main(int argc, char *argv[])
             if (redirect)
             {
                 dup2(fd, STDOUT_FILENO);
-                dup2(fd, STDERR_FILENO);
+                // dup2(fd, STDERR_FILENO);
                 new_args[i - 2] = NULL;
                 new_args[i - 1] = NULL;
             }

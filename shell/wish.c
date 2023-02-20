@@ -178,8 +178,6 @@ int main(int argc, char *argv[])
                 {
                     if (redirect)
                     {
-                        // too many redirects
-                        
                         fprintf(stderr, "An error has occurred\n");
                         break;
                     }
@@ -203,8 +201,9 @@ int main(int argc, char *argv[])
                 dir = strtok(NULL, ":");
             }
 
-            fprintf(stdout, "full path is %s \n", full_path);
+            // fprintf(stdout, "full path is %s \n", full_path);
 
+            // can't find command
             if (dir == NULL)
             {
                 fprintf(stderr, "An error has occurred\n");
@@ -259,6 +258,12 @@ int main(int argc, char *argv[])
             pid_t pid = fork();
             if (pid == 0)
             {
+                int j;
+                for (j = 0; new_args[j] != NULL; j++)
+                {
+                    printf("new_args[%d]: %s\n", j, new_args[j]);
+                }
+
                 if (execv(full_path, new_args) == -1)
                 {
                     fprintf(stderr, "An error has occurred\n");

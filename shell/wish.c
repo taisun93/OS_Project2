@@ -129,10 +129,17 @@ int main(int argc, char *argv[])
         }
 
         // tokenization
-        //gets rid of leading tabs
+        // gets rid of leading tabs
         while (*input == '\t')
         {
             input++;
+        }
+
+        // Remove trailing newline character
+        int len = strlen(input);
+        if (input[len - 1] == '\n')
+        {
+            input[len - 1] = '\0';
         }
 
         input[strcspn(input, "\n")] = '\0';

@@ -140,7 +140,7 @@ int main(int argc, char *argv[])
         int num_args = 0;
 
         char *token = strtok(input, " ");
-        // fprintf(stderr, "strtoked \n");
+        fprintf(stderr, "strtoked %s \n", token);
         while (token != NULL && num_args < MAX_INPUT)
         {
             fprintf(stderr, "token here %s \n", token);

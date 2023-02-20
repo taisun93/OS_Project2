@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
         char *args[MAX_INPUT];
         int num_args = 0;
 
-        char *token, *str, *endptr;
+        char *token, *str;
         str = input;
         while ((token = strsep(&str, " ")) != NULL && num_args < MAX_INPUT)
         {

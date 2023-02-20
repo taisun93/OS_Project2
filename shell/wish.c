@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
             int i;
             for (i = 0; args[i] != NULL; i++)
             {
-                fprintf(stderr, "blah blah %s", args[i])
+                fprintf(stderr, "blah blah %s", args[i]);
                 if (strcmp(args[i], ">") != 0)
                 {
                     if(redirect){

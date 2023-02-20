@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
                 }
 
                 // if the loop completes without finding the command, print an error message
-                fprintf(stderr, "Command not found: %s\n", args[0]);
+                fprintf(stderr, "An error has occurred");
                 exit(EXIT_FAILURE);
             }
             else if (pid < 0)

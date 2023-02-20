@@ -203,6 +203,8 @@ int main(int argc, char *argv[])
                 dir = strtok(NULL, ":");
             }
 
+            fprintf(stdout, "full path is %s \n", full_path);
+
             if (dir == NULL)
             {
                 fprintf(stderr, "An error has occurred\n");

@@ -81,6 +81,7 @@ int path(char *args[])
 
 int main(int argc, char *argv[])
 {
+    fprintf(stderr, "what's going on\n");
     int interactive = (argc == 1) ? 1 : 0;
     FILE *input_file = NULL;
     setenv("PATH", "/bin", 1);

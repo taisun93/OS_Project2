@@ -204,20 +204,18 @@ int main(int argc, char *argv[])
         }
         else if (strcmp(args[0], "exit") == 0)
         {
-            else if (strcmp(args[0], "exit") == 0)
+
+            if (num_args == 1) // check for no extra args
             {
-                if (num_args == 1) // check for no extra args
+                if (interactive)
                 {
-                    if (interactive)
-                    {
-                        break;
-                    }
-                    exit(0);
+                    break;
                 }
-                else
-                {
-                    fprintf(stderr, "An error has occurred\n");
-                }
+                exit(0);
+            }
+            else
+            {
+                fprintf(stderr, "exit: too many arguments\n");
             }
         }
         else if (strcmp(args[0], "cd") == 0)

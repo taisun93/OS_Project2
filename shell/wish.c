@@ -182,80 +182,79 @@ int main(int argc, char *argv[])
             char *dir = strtok(path, ":");
             // fprintf(stdout, "3");
 
-            pid_t pid = fork();
-            if (pid == 0)
+            while (dir != NULL)
             {
-
-                while (dir != NULL)
+                char full_path[strlen(dir) + strlen(args[0]) + 2];
+                sprintf(full_path, "%s/%s", dir, args[0]);
+                fprintf(stdout, "yo here's the path %s", full_path);
+                if (access(full_path, X_OK) == 0)
                 {
-                    char full_path[strlen(dir) + strlen(args[0]) + 2];
-                    sprintf(full_path, "%s/%s", dir, args[0]);
-                    fprintf(stdout, "yo here's the path %s", full_path);
-                    if (access(full_path, X_OK) == 0)
+                    // Check for shell redirection
+                    int fd = -1;
+                    int fuckingIssues = 0;
+                    if (i >= 2 && args[i - 2] != NULL && strstr(args[i - 2], ">") != NULL)
                     {
-                        // Check for shell redirection
-                        int fd = -1;
-                        int fuckingIssues = 0;
-                        if (i >= 2 && args[i - 2] != NULL && strstr(args[i - 2], ">") != NULL)
+
+                        int redirIndex = i - 2;
+                        while (redirIndex > 0 && strcmp(args[redirIndex], ">") != 0)
                         {
-
-                            int redirIndex = i - 2;
-                            while (redirIndex > 0 && strcmp(args[redirIndex], ">") != 0)
-                            {
-                                redirIndex--;
-                            }
-
-                            if (strcmp(args[redirIndex], ">") != 0 || args[i - 1] == NULL)
-                            {
-                                fuckingIssues = 1;
-                                fprintf(stderr, "Invalid command syntax\n");
-                                break;
-                            }
-
-                            char *filename = args[i - 1];
-                            fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC);
-                            if (fd == -1)
-                            {
-                                fprintf(stderr, "Unable to open output file %s: %s\n", filename, strerror(errno));
-                                exit(EXIT_FAILURE);
-                            }
-
-                            // Redirect standard output to file
-                            // if (dup2(fd, STDOUT_FILENO) == -1)
-                            // {
-                            //     fprintf(stderr, "Unable to redirect standard output: %s\n", strerror(errno));
-                            //     exit(EXIT_FAILURE);
-                            // }
-
-                            // Redirect standard error to file
-                            if (dup2(fd, STDERR_FILENO) == -1)
-                            {
-                                fprintf(stderr, "Unable to redirect standard error: %s\n", strerror(errno));
-                                exit(EXIT_FAILURE);
-                            }
-
-                            new_args[i - 2] = NULL;
-                            new_args[i - 1] = NULL;
-                            i -= 2;
-
-                            fprintf(stdout, "Fucking issues: %d\n", fuckingIssues);
+                            redirIndex--;
                         }
 
-                        fprintf(stdout, "Fucking issues again: %d\n", fuckingIssues);
-
-                        if (!fuckingIssues && execv(full_path, new_args) == -1)
+                        if (strcmp(args[redirIndex], ">") != 0 || args[i - 1] == NULL)
                         {
-                            fprintf(stderr, "An error occurred while executing the command\n");
+                            fuckingIssues = 1;
+                            fprintf(stderr, "Invalid command syntax\n");
+                            break;
+                        }
+
+                        char *filename = args[i - 1];
+                        fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC);
+                        if (fd == -1)
+                        {
+                            fprintf(stderr, "Unable to open output file %s: %s\n", filename, strerror(errno));
                             exit(EXIT_FAILURE);
                         }
 
-                        if (i >= 2 && args[i - 2] != NULL && strcmp(args[i - 2], ">") == 0)
+                        // Redirect standard output to file
+                        // if (dup2(fd, STDOUT_FILENO) == -1)
+                        // {
+                        //     fprintf(stderr, "Unable to redirect standard output: %s\n", strerror(errno));
+                        //     exit(EXIT_FAILURE);
+                        // }
+
+                        // Redirect standard error to file
+                        if (dup2(fd, STDERR_FILENO) == -1)
                         {
-                            close(fd);
+                            fprintf(stderr, "Unable to redirect standard error: %s\n", strerror(errno));
+                            exit(EXIT_FAILURE);
                         }
-                        break;
+
+                        new_args[i - 2] = NULL;
+                        new_args[i - 1] = NULL;
+                        i -= 2;
+
+                        // fprintf(stdout, "Fucking issues: %d\n", fuckingIssues);
                     }
-                    dir = strtok(NULL, ":");
+
+                    // fprintf(stdout, "Fucking issues again: %d\n", fuckingIssues);
+
+                    if (i >= 2 && args[i - 2] != NULL && strcmp(args[i - 2], ">") == 0)
+                    {
+                        close(fd);
+                    }
+                    break;
+                }
+                dir = strtok(NULL, ":");
+            }
+
+            pid_t pid = fork();
+            if (pid == 0)
+            {
+                if (execv(full_path, new_args) == -1)
+                {
+                    fprintf(stderr, "An error occurred while executing the command\n");
+                    exit(EXIT_FAILURE);
                 }
 
                 fprintf(stderr, "An error has occurred\n");

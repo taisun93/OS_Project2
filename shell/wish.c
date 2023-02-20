@@ -158,12 +158,11 @@ int main(int argc, char *argv[])
         {
             continue;
         }
-        
 
         fprintf(stderr, "strtoked %s \n", token);
         while (token != NULL && num_args < MAX_INPUT)
         {
-            fprintf(stderr, "token here %s \n", token);
+            // fprintf(stderr, "token here %s \n", token);
             // Trim leading whitespace from token
 
             if (strcmp(token, ">") != 0 && strstr(token, ">") != NULL)
@@ -337,7 +336,10 @@ int main(int argc, char *argv[])
         }
     }
 
-    free(input);
+    if (input != NULL)
+    {
+        free(input);
+    }
 
     return 0;
 }

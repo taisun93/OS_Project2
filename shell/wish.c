@@ -134,15 +134,15 @@ int main(int argc, char *argv[])
         {
             if (*input == '\t')
             {
-                fprintf(stderr, "stripping away t");
+                fprintf(stderr, "stripping away t\n");
             }
             if (*input == ' ')
             {
-                fprintf(stderr, "stripping away space");
+                fprintf(stderr, "stripping away space\n");
             }
             if (*input == '\n')
             {
-                fprintf(stderr, "stripping away n");
+                fprintf(stderr, "stripping away n\n");
             }
 
             input++;

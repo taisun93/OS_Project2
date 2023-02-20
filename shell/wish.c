@@ -124,33 +124,38 @@ int main(int argc, char *argv[])
                 break;
             }
         }
-
+        //tokenization
         input[strcspn(input, "\n")] = '\0';
         char *args[MAX_INPUT];
         int num_args = 0;
 
-        char *token, *saveptr;
-        while ((token = strsep(&input_copy, " ")) != NULL && num_args < MAX_INPUT)
+        char *token, *str, *endptr;
+        str = input;
+        while ((token = strsep(&str, " ")) != NULL && num_args < MAX_INPUT)
         {
-            if (strcmp(token, ">") == 0)
-            {
-                if ((token = strsep(&input_copy, " ")) != NULL && num_args < MAX_INPUT)
-                {
-                    args[num_args++] = ">";
-                    args[num_args++] = token;
-                }
-                else
-                {
-                    fprintf(stderr, "Missing output file name\n");
-                    return -1;
-                }
-            }
-            else if (strlen(token) > 0)
+            if (token[0] == '\0')
+                continue; // ignore empty tokens
+            if (token[0] == '>')
             {
                 args[num_args++] = token;
             }
+            else
+            {
+                args[num_args++] = token;
+                if ((endptr = strpbrk(token, ">")) != NULL && endptr[0] == '>' && endptr[1] == '\0')
+                {
+                    // found > at end of token, break it into two tokens
+                    *endptr = '\0';
+                    args[num_args++] = ">";
+                    if (str != NULL)
+                    {
+                        args[num_args++] = str;
+                        break;
+                    }
+                }
+            }
         }
-        args[num_args] = NULL;
+        args[num_args] = NULL; // Set last argument to NULL
 
         if (strcmp(args[0], "exit") == 0)
         {

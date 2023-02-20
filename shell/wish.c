@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
             int j;
             for (j = 0; new_args[j] != NULL; j++)
             {
-                printf("new_args[%d]: %s\n", j, new_args[j]);
+                fprintf(stdout, "new_args[%d]: %s\n", j, new_args[j]);
             }
 
             pid_t pid = fork();

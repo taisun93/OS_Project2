@@ -129,35 +129,41 @@ int main(int argc, char *argv[])
         char *args[MAX_INPUT];
         int num_args = 0;
 
-        char *token = input;
-        char *rest = NULL;
-        while ((token = strsep(&rest, " ")) != NULL && num_args < MAX_INPUT)
+        char *token, *str, *endptr;
+        str = input;
+        while ((token = strsep(&str, " ")) != NULL && num_args < MAX_INPUT)
         {
-            if (strcmp(token, "") == 0)
-            {
-                continue;
-            }
+            if (token[0] == '\0')
+                continue; // ignore empty tokens
 
-            char *found = strstr(token, ">");
-            if (found != NULL)
+            if (token[0] == '>')
             {
-                if (strlen(token) > 1)
-                {
-                    // ">" is not the only character in the token, need to split it
-                    *found = '\0';
-                    args[num_args++] = token;
-                    args[num_args++] = ">";
-                    args[num_args++] = found + 1;
-                }
-                else
-                {
-                    // Only ">" in token, treat it as a separate argument
-                    args[num_args++] = ">";
-                }
+                args[num_args++] = token;
             }
             else
             {
-                args[num_args++] = token;
+                char *ptr = token;
+                while ((ptr = strpbrk(ptr, ">")) != NULL)
+                {
+                    // Found >, break token into two
+                    if (ptr == token)
+                    {
+                        args[num_args++] = ">";
+                    }
+                    else
+                    {
+                        *ptr = '\0';
+                        args[num_args++] = token;
+                        args[num_args++] = ">";
+                        token = ptr + 1;
+                        break;
+                    }
+                    ptr++;
+                }
+                if (ptr == NULL)
+                {
+                    args[num_args++] = token;
+                }
             }
         }
         args[num_args] = NULL; // Set last argument to NULL
@@ -196,7 +202,7 @@ int main(int argc, char *argv[])
 
             for (i = 0; args[i] != NULL; i++)
             {
-                fprintf(stdout, "start %s \n", args[i]);
+                fprintf(stdout, "start start %s \n", args[i]);
                 if (strcmp(args[i], ">") == 0)
                 {
                     if (redirect)

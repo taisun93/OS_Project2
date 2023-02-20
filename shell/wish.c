@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
         int num_args = 0;
 
         char *arg = NULL;
-        while ((arg = strsep(&input_copy, " ")) != NULL && num_args < MAX_INPUT)
+        while ((arg = strsep(&input, " ")) != NULL && num_args < MAX_INPUT)
         {
             if (*arg == '\0')
             {

@@ -323,7 +323,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    // free(input);
+    free(input);
 
     return 0;
 }

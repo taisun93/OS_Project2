@@ -273,10 +273,10 @@ int main(int argc, char *argv[])
                 wait(NULL);
             }
 
-            if (fd != -1)
-            {
-                close(fd);
-            }
+            // if (fd != -1)
+            // {
+            //     close(fd);
+            // }
         }
 
         free(input);

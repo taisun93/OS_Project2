@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
                             if (strcmp(args[redirIndex], ">") != 0 || args[i - 1] == NULL)
                             {
                                 fprintf(stderr, "Invalid command syntax\n");
-                                continue;
+                                break;
                             }
 
                             char *filename = args[i - 1];

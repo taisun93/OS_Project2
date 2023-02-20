@@ -130,20 +130,13 @@ int main(int argc, char *argv[])
 
         // tokenization
 
-        while (*input == '\t' || *input == '\n')
+        while (*input == '\t' || *input == ' ' || *input == '\n')
         {
             input++;
         }
 
-        char *ptr = input;
-        while (*ptr == '\n')
-        {
-            ptr++;
-        }
-        strcpy(input, ptr);
-
-        input[strcspn(input, "\n")] = '\0';
-        fprintf(stderr, "getting line%s\n", input);
+        // input[strcspn(input, "\n")] = '\0';
+        // fprintf(stderr, "getting line%s\n", input);
         char *args[MAX_INPUT];
         int num_args = 0;
 

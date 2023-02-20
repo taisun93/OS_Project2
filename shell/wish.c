@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-            fprintf(stdout, "getting line\n");
+            // fprintf(stdout, "getting line\n");
             if (getline(&input, &input_len, input_file) == -1)
             {
                 break;
@@ -126,10 +126,10 @@ int main(int argc, char *argv[])
         }
 
         input[strcspn(input, "\n")] = '\0';
-        fprintf(stdout, "getting line%s\n", input);
+        // fprintf(stdout, "getting line%s\n", input);
         char *args[MAX_INPUT / 2 + 1];
         int num_args = 0;
-        fprintf(stdout, "-1\n");
+        // fprintf(stdout, "-1\n");
 
         char *token = strtok(input, " ");
         while (token != NULL && num_args < MAX_INPUT / 2 + 1)
@@ -172,20 +172,21 @@ int main(int argc, char *argv[])
             pid_t pid = fork();
             if (pid == 0)
             {
+                fprintf(stdout, "pid is 0");
                 // Child process
                 char *new_args[MAX_ARGS];
                 int i;
-                fprintf(stdout, "1");
+                // fprintf(stdout, "1");
                 for (i = 0; args[i] != NULL; i++)
                 {
                     new_args[i] = args[i];
                 }
                 new_args[i] = NULL;
-                fprintf(stdout, "2");
+                // fprintf(stdout, "2");
                 char *path_env = getenv("PATH");
                 char *path = strdup(path_env);
                 char *dir = strtok(path, ":");
-                fprintf(stdout, "3");
+                // fprintf(stdout, "3");
                 while (dir != NULL)
                 {
                     char full_path[strlen(dir) + strlen(args[0]) + 2];
@@ -264,7 +265,7 @@ int main(int argc, char *argv[])
             }
             else if (pid < 0)
             {
-                perror("fork");
+                fprintf(stderr, "An error has occurred in the fork\n");
                 exit(EXIT_FAILURE);
             }
             else

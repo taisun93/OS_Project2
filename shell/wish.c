@@ -134,19 +134,19 @@ int main(int argc, char *argv[])
         char *arg;
         while ((arg = strsep(&input, " ")) != NULL && num_args < MAX_INPUT)
         {
-            if (strcmp(arg, ">") != 0 && strstr(arg, ">") != NULL)
-            {
-                char *arg1, *arg2;
-                arg1 = strsep(&arg, ">");
-                arg2 = strsep(&arg, ">");
-                args[num_args++] = arg1;
-                args[num_args++] = ">";
-                args[num_args++] = arg2;
-            }
-            else
-            {
+            // if (strcmp(arg, ">") != 0 && strstr(arg, ">") != NULL)
+            // {
+            //     char *arg1, *arg2;
+            //     arg1 = strsep(&arg, ">");
+            //     arg2 = strsep(&arg, ">");
+            //     args[num_args++] = arg1;
+            //     args[num_args++] = ">";
+            //     args[num_args++] = arg2;
+            // }
+            // else
+            // {
                 args[num_args++] = arg;
-            }
+            // }
         }
         args[num_args] = NULL; // Set last argument to NULL
 

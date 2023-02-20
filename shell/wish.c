@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
 
             for (i = 0; args[i] != NULL; i++)
             {
-                // fprintf(stdout, "start start %s \n", args[i]);
+                fprintf(stdout, "start start %s \n", args[i]);
                 if (strcmp(args[i], ">") == 0)
                 {
                     if (redirect)

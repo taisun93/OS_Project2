@@ -124,37 +124,21 @@ int main(int argc, char *argv[])
                 break;
             }
         }
-        // tokenization
+
         input[strcspn(input, "\n")] = '\0';
+        // fprintf(stdout, "getting line%s\n", input);
         char *args[MAX_INPUT];
         int num_args = 0;
+        // fprintf(stdout, "-1\n");
 
-        char *arg;
-        while ((arg = strsep(&input, " ")) != NULL && num_args < MAX_INPUT)
+        char *token = strtok(input, " ");
+        while (token != NULL && num_args < MAX_INPUT)
         {
-            if (*arg == '\0')
-            {
-                continue; // skip over empty tokens
-            }
-
-            if (strcmp(arg, ">") == 0)
-            {
-                char *arg1, *arg2;
-                arg1 = strsep(&arg, ">");
-                arg2 = strsep(&arg, ">");
-                args[num_args++] = arg1;
-                args[num_args++] = ">";
-                args[num_args++] = arg2;
-            }
-            else
-            {
-                args[num_args++] = arg;
-            }
+            args[num_args++] = token;
+            token = strtok(NULL, " ");
         }
+        args[num_args] = NULL; // Set last argument to NULL
 
-        args[num_args] = NULL; // null terminate arguments
-
-        // start parsing
         if (strcmp(args[0], "exit") == 0)
         {
             if (args[1] != NULL)
@@ -189,7 +173,7 @@ int main(int argc, char *argv[])
 
             for (i = 0; args[i] != NULL; i++)
             {
-                fprintf(stdout, "start start %s \n", args[i]);
+                // fprintf(stdout, "start start %s \n", args[i]);
                 if (strcmp(args[i], ">") == 0)
                 {
                     if (redirect)
@@ -258,8 +242,8 @@ int main(int argc, char *argv[])
             {
                 dup2(fd, STDOUT_FILENO);
                 dup2(fd, STDERR_FILENO);
-                args[i - 2] = NULL;
-                args[i - 1] = NULL;
+                args[arg_count - 2] = NULL;
+                args[arg_count - 1] = NULL;
             }
 
             pid_t pid = fork();

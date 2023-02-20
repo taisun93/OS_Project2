@@ -172,16 +172,17 @@ int main(int argc, char *argv[])
                 // Child process
                 char *new_args[MAX_ARGS];
                 int i;
+                fprintf(stdout, "1");
                 for (i = 0; args[i] != NULL; i++)
                 {
                     new_args[i] = args[i];
                 }
                 new_args[i] = NULL;
-
+                fprintf(stdout, "2");
                 char *path_env = getenv("PATH");
                 char *path = strdup(path_env);
                 char *dir = strtok(path, ":");
-
+                fprintf(stdout, "3");
                 while (dir != NULL)
                 {
                     char full_path[strlen(dir) + strlen(args[0]) + 2];

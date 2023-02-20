@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
                         redirect = 1;
                         if (args[i + 1] != NULL)
                         {
-                            redirect_target = args[i + 1];
+                            fd = open(args[i + 1], O_WRONLY | O_CREAT | O_TRUNC, 0666);
                         }
                     }
                 }
@@ -241,7 +241,6 @@ int main(int argc, char *argv[])
             // redirect here
             if (redirect)
             {
-                fd = open(redirect_target, O_CREAT | O_WRONLY | O_TRUNC, 0644);
                 dup2(fd, STDOUT_FILENO);
                 dup2(fd, STDERR_FILENO);
             }

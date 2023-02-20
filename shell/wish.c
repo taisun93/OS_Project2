@@ -228,7 +228,7 @@ int main(int argc, char *argv[])
                     dir = strtok(NULL, ":");
                 }
 
-                fprintf(stderr, "Command not found: %s\n", args[0]);
+                fprintf(stderr, "An error has occurred\n");
                 exit(EXIT_FAILURE);
             }
             else if (pid < 0)

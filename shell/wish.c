@@ -215,7 +215,7 @@ int main(int argc, char *argv[])
             }
             else
             {
-                fprintf(stderr, "exit: too many arguments\n");
+                fprintf(stderr, "An error has occurred\n");
             }
         }
         else if (strcmp(args[0], "cd") == 0)

@@ -214,8 +214,10 @@ int main(int argc, char *argv[])
             {
                 fprintf(stderr, "An error has occurred\n");
                 free(input);
+
                 break;
             }
+            free(path);
 
             pid_t pid = fork();
             if (pid == 0)
@@ -224,21 +226,21 @@ int main(int argc, char *argv[])
                 if (execv(full_path, new_args) == -1)
                 {
                     fprintf(stderr, "An error has occurred\n");
-                    free(path);
+
                     exit(EXIT_FAILURE);
                 }
             }
             else if (pid < 0)
             {
                 fprintf(stderr, "An error has occurred\n");
-                free(path);
+
                 exit(EXIT_FAILURE);
             }
             else
             {
+
                 wait(NULL);
             }
-            free(path);
         }
     }
     free(input);

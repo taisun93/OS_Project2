@@ -127,12 +127,12 @@ int main(int argc, char *argv[])
 
         input[strcspn(input, "\n")] = '\0';
         // fprintf(stdout, "getting line%s\n", input);
-        char *args[MAX_INPUT / 2 + 1];
+        char *args[MAX_INPUT ];
         int num_args = 0;
         // fprintf(stdout, "-1\n");
 
         char *token = strtok(input, " ");
-        while (token != NULL && num_args < MAX_INPUT / 2 + 1)
+        while (token != NULL && num_args < MAX_INPUT)
         {
             args[num_args++] = token;
             token = strtok(NULL, " ");
@@ -173,6 +173,7 @@ int main(int argc, char *argv[])
             int i;
             for (i = 0; args[i] != NULL; i++)
             {
+                fprintf(stdout, "start start %s \n", args[i]);
                 if (strcmp(args[i], ">") != 0)
                 {
                     if (redirect)

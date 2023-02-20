@@ -135,15 +135,15 @@ int main(int argc, char *argv[])
             input++;
         }
 
-        fprintf(stderr, "getting line\n");
+        // fprintf(stderr, "getting line\n");
         char *args[MAX_INPUT];
         int num_args = 0;
 
         char *token = strtok(input, " ");
-        fprintf(stderr, "strtoked \n");
+        // fprintf(stderr, "strtoked \n");
         while (token != NULL && num_args < MAX_INPUT)
         {
-            // fprintf(stderr, "token here %s \n", token);
+            fprintf(stderr, "token here %s \n", token);
             // Trim leading whitespace from token
 
             if (strcmp(token, ">") != 0 && strstr(token, ">") != NULL)

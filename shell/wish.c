@@ -127,11 +127,10 @@ int main(int argc, char *argv[])
 
         // tokenization
         input[strcspn(input, "\n")] = '\0';
-        char *input_copy = strdup(input);
         char *args[MAX_INPUT];
         int num_args = 0;
         char *arg;
-        while ((arg = strsep(&input_copy, " ")) != NULL && num_args < MAX_INPUT)
+        while ((arg = strsep(&input, " ")) != NULL && num_args < MAX_INPUT)
         {
             if (strcmp(arg, ">") != 0 && strstr(arg, ">") != NULL)
             {
@@ -280,10 +279,10 @@ int main(int argc, char *argv[])
             }
             // close(fd);
         }
-        free(input_copy);
+        free(input);
     }
     // close(fd);
-    free(input);
+    
 
     return 0;
 }

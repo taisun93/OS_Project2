@@ -286,7 +286,7 @@ int main(int argc, char *argv[])
         }
 
         free(input);
-        free(path);
+        // free(path);
         return 0;
     }
 }

@@ -165,6 +165,7 @@ int main(int argc, char *argv[])
         // execute shit
         else
         {
+            fprintf(stdout, "executing");
             pid_t pid = fork();
             if (pid == 0)
             {

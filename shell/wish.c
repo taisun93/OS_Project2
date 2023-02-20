@@ -215,11 +215,11 @@ int main(int argc, char *argv[])
                             }
 
                             // Redirect standard output to file
-                            if (dup2(fd, STDOUT_FILENO) == -1)
-                            {
-                                fprintf(stderr, "Unable to redirect standard output: %s\n", strerror(errno));
-                                exit(EXIT_FAILURE);
-                            }
+                            // if (dup2(fd, STDOUT_FILENO) == -1)
+                            // {
+                            //     fprintf(stderr, "Unable to redirect standard output: %s\n", strerror(errno));
+                            //     exit(EXIT_FAILURE);
+                            // }
 
                             // Redirect standard error to file
                             if (dup2(fd, STDERR_FILENO) == -1)
@@ -231,6 +231,8 @@ int main(int argc, char *argv[])
                             new_args[i - 2] = NULL;
                             new_args[i - 1] = NULL;
                             i -= 2;
+
+                            fprintf(stdout, "Fucking issues: %d\n", fuckingIssues);
                             
                         }
 

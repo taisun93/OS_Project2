@@ -129,16 +129,16 @@ int main(int argc, char *argv[])
         char *args[MAX_INPUT];
         int num_args = 0;
 
-        char *arg;
-        while ((arg = strsep(&input, " ")) != NULL && num_args < MAX_INPUT)
+        char *token, *rest;
+        rest = input;
+        while ((token = strsep(&rest, " ")) != NULL && num_args < MAX_INPUT)
         {
-            if (*arg == '\0')
+            if (strcmp(token, "") != 0)
             {
-                continue; // skip empty strings
+                args[num_args++] = token;
             }
-            args[num_args++] = arg;
         }
-        args[num_args] = NULL; // set last argument to NULL
+        args[num_args] = NULL;
 
         if (strcmp(args[0], "exit") == 0)
         {

@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
         char *args[MAX_INPUT];
         int num_args = 0;
         // fprintf(stdout, "-1\n");
-
+        fprintf(stdout, "got the line%s\n", input);
         char *token = strtok(input, " ");
         while (token != NULL && num_args < MAX_INPUT)
         {

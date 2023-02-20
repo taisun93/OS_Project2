@@ -169,7 +169,8 @@ int main(int argc, char *argv[])
             int redirect = 0;
             // Child process
             char *new_args[MAX_ARGS];
-            int i;
+            char *redirect_target[MAX_ARGS];
+            int i, fd;
 
             for (i = 0; args[i] != NULL; i++)
             {
@@ -183,6 +184,10 @@ int main(int argc, char *argv[])
                     else
                     {
                         redirect = 1;
+                        if (args[i + 1] != NULL)
+                        {
+                            redirect_target = args[i + 1];
+                        }
                     }
                 }
                 new_args[i] = args[i];
@@ -233,7 +238,10 @@ int main(int argc, char *argv[])
                 fprintf(stderr, "An error has occurred\n");
                 continue;
             }
-
+            // redirect here
+            fd = open(redirect_target, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+            dup2(fd, STDOUT_FILENO);
+            dup2(fd, STDERR_FILENO);
             pid_t pid = fork();
             if (pid == 0)
             {
@@ -241,14 +249,14 @@ int main(int argc, char *argv[])
                 if (execv(full_path, new_args) == -1)
                 {
                     fprintf(stderr, "An error has occurred\n");
-
+                    close(fd);
                     exit(EXIT_FAILURE);
                 }
             }
             else if (pid < 0)
             {
                 fprintf(stderr, "An error has occurred\n");
-
+                close(fd);
                 exit(EXIT_FAILURE);
             }
             else
@@ -256,6 +264,7 @@ int main(int argc, char *argv[])
 
                 wait(NULL);
             }
+            close(fd);
         }
     }
     free(input);

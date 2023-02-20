@@ -204,13 +204,21 @@ int main(int argc, char *argv[])
         }
         else if (strcmp(args[0], "exit") == 0)
         {
-
-
-            if (interactive)
+            else if (strcmp(args[0], "exit") == 0)
             {
-                break;
+                if (num_args == 1) // check for no extra args
+                {
+                    if (interactive)
+                    {
+                        break;
+                    }
+                    exit(0);
+                }
+                else
+                {
+                    fprintf(stderr, "An error has occurred\n");
+                }
             }
-            exit(0);
         }
         else if (strcmp(args[0], "cd") == 0)
         {

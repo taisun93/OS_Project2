@@ -189,22 +189,17 @@ int main(int argc, char *argv[])
                     {
                         // Check for shell redirection
                         int fd = -1;
-                        if (i >= 2 && args[i - 2] != NULL && strstr(args[i - 2], ">") != NULL)
+                        if (i >= 2 && args[i - 2] != NULL && strcmp(args[i - 2], ">") == 0)
                         {
-                            int redirIndex = i - 2;
-                            while (redirIndex > 0 && strcmp(args[redirIndex], ">") != 0)
+                            // check if file name provided after '>'
+                            if (args[i - 1] == NULL)
                             {
-                                redirIndex--;
-                            }
-
-                            if (strcmp(args[redirIndex], ">") != 0 || args[i - 1] == NULL)
-                            {
-                                fprintf(stderr, "Invalid command syntax\n");
-                                break;
+                                fprintf(stderr, "Error: No file name provided for output redirection\n");
+                                continue; // continue with the loop
                             }
 
                             char *filename = args[i - 1];
-                            fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC);
+                            fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
                             if (fd == -1)
                             {
                                 fprintf(stderr, "Unable to open output file %s: %s\n", filename, strerror(errno));
@@ -225,8 +220,8 @@ int main(int argc, char *argv[])
                                 exit(EXIT_FAILURE);
                             }
 
-                            new_args[i - 2] = NULL;
-                            new_args[i - 1] = NULL;
+                            // set new argument count for execv
+                            new_argc = i - 1;
                         }
 
                         if (execv(full_path, new_args) == -1)
@@ -235,7 +230,7 @@ int main(int argc, char *argv[])
                             exit(EXIT_FAILURE);
                         }
 
-                        if (i >= 2 && args[i - 2] != NULL && strcmp(args[i - 2], ">") == 0)
+                        if (fd != -1)
                         {
                             close(fd);
                         }

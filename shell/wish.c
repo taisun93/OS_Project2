@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
         int num_args = 0;
         // fprintf(stdout, "-1\n");
 
-        while ((arg = strsep(&input_copy, " ")) != NULL && num_args < MAX_INPUT)
+        while ((arg = strsep(&input, " ")) != NULL && num_args < MAX_INPUT)
         {
             if (strcmp(arg, ">") != 0 && strstr(arg, ">") != NULL)
             {
@@ -282,7 +282,7 @@ int main(int argc, char *argv[])
             // close(fd);
         }
     }
-    close(fd);
+    // close(fd);
     free(input);
 
     return 0;

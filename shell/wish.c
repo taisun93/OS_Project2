@@ -272,7 +272,7 @@ int main(int argc, char *argv[])
             // close(fd);
         }
     }
-    close(fd);
+    // close(fd);
     free(input);
 
     return 0;

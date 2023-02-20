@@ -167,6 +167,7 @@ int main(int argc, char *argv[])
         // execute shit
         else
         {
+            int fucking_bother = 1;
             // Child process
             char *new_args[MAX_ARGS];
             int i;
@@ -192,7 +193,7 @@ int main(int argc, char *argv[])
 
             if (dir == NULL)
             {
-                fprintf(stderr, "Command not found: %s\n", args[0]);
+                fprintf(stderr, "An error has occurred\n");
                 continue;
             }
 
@@ -208,22 +209,23 @@ int main(int argc, char *argv[])
 
                 if (strcmp(args[redirIndex], ">") != 0 || args[i - 1] == NULL)
                 {
-                    fprintf(stderr, "Invalid command syntax\n");
-                    continue;
+                    fprintf(stderr, "An error has occurred\n");
+                    fucking_bother = 0;
+                    break;
                 }
 
                 char *filename = args[i - 1];
                 fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
                 if (fd == -1)
                 {
-                    fprintf(stderr, "Unable to open output file %s: %s\n", filename, strerror(errno));
+                    fprintf(stderr, "An error has occurred\n");
                     exit(EXIT_FAILURE);
                 }
 
                 // Redirect standard output and standard error to file
                 if (dup2(fd, STDOUT_FILENO) == -1 || dup2(fd, STDERR_FILENO) == -1)
                 {
-                    fprintf(stderr, "Unable to redirect standard output and standard error: %s\n", strerror(errno));
+                    fprintf(stderr, "An error has occurred\n");
                     exit(EXIT_FAILURE);
                 }
 
@@ -231,29 +233,31 @@ int main(int argc, char *argv[])
                 new_args[i - 1] = NULL;
                 i -= 2;
             }
-
-            pid_t pid = fork();
-            if (pid == 0)
+            if (fucking_bother)
             {
-                if (execv(full_path, new_args) == -1)
+                pid_t pid = fork();
+                if (pid == 0)
                 {
-                    fprintf(stderr, "An error occurred while executing the command\n");
+                    if (execv(full_path, new_args) == -1)
+                    {
+                        fprintf(stderr, "An error has occurred\n");
+                        exit(EXIT_FAILURE);
+                    }
+                }
+                else if (pid < 0)
+                {
+                    fprintf(stderr, "An error has occurred\n");
                     exit(EXIT_FAILURE);
                 }
-            }
-            else if (pid < 0)
-            {
-                fprintf(stderr, "An error has occurred\n");
-                exit(EXIT_FAILURE);
-            }
-            else
-            {
-                wait(NULL);
-            }
+                else
+                {
+                    wait(NULL);
+                }
 
-            if (fd != -1)
-            {
-                close(fd);
+                if (fd != -1)
+                {
+                    close(fd);
+                }
             }
         }
 

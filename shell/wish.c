@@ -255,8 +255,8 @@ int main(int argc, char *argv[])
             {
                 dup2(fd, STDOUT_FILENO);
                 dup2(fd, STDERR_FILENO);
-                args[i - 2] = NULL;
-                args[i - 1] = NULL;
+                new_args[i - 2] = NULL;
+                new_args[i - 1] = NULL;
             }
 
             pid_t pid = fork();

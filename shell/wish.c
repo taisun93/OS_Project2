@@ -207,7 +207,7 @@ int main(int argc, char *argv[])
                     redirIndex--;
                 }
 
-                if (strcmp(args[redirIndex], ">") != 0 || args[i - 1] == NULL || args[i - 1] == ">")
+                if (strcmp(args[redirIndex], ">") != 0 || args[i - 1] == NULL || strcmp(args[i - 1], ">") != 0)
                 {
                     fprintf(stderr, "An error has occurred\n");
                     fucking_bother = 0;

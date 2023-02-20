@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
             int i;
             for (i = 0; args[i] != NULL; i++)
             {
-                fprintf(stderr, "blah blah %s \n", args[i]);
+                // fprintf(stderr, "blah blah %s \n", args[i]);
                 if (strcmp(args[i], ">") != 0)
                 {
                     if(redirect){
@@ -216,10 +216,7 @@ int main(int argc, char *argv[])
                 fucking_bother = 0;
                 break;
             }
-            // else{
-            //     fprintf(stderr, "kill me %s\n", args[i-1]);
-                
-            // }
+
 
             // Check for shell redirection
             int fd = -1;
@@ -289,7 +286,7 @@ int main(int argc, char *argv[])
         }
 
         free(input);
-
+        free(path);
         return 0;
     }
 }

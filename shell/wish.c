@@ -132,7 +132,19 @@ int main(int argc, char *argv[])
 
         while (*input == '\t' || *input == ' ' || *input == '\n')
         {
-            fprintf(stderr, "stripping away %s \n", input);
+            if (*input == '\t')
+            {
+                fprintf(stderr, "stripping away t");
+            }
+            if (*input == ' ')
+            {
+                fprintf(stderr, "stripping away space");
+            }
+            if (*input == '\n')
+            {
+                fprintf(stderr, "stripping away n");
+            }
+
             input++;
         }
 

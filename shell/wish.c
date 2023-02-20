@@ -233,6 +233,8 @@ int main(int argc, char *argv[])
                 new_args[i - 1] = NULL;
                 i -= 2;
             }
+
+            fprintf(stderr, "do I bother? %d", fucking_bother);
             if (fucking_bother)
             {
                 pid_t pid = fork();

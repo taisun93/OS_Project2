@@ -36,36 +36,39 @@ int cd(char *args[])
 
 int path(char *args[])
 {
+    char *path = getenv("PATH");
+    if (path == NULL)
+    {
+        perror("getenv");
+        return 1;
+    }
+
     if (args[1] == NULL)
     {
-        // No arguments specified, wipe path
-        if (setenv("PATH", "", 1) == -1)
-        {
-            perror("setenv");
-            return 1;
-        }
-        fprintf(stdout, "adfssfd\n");
+        // No arguments specified, print current path
+        fprintf(stdout, "%s\n", path);
+        return 0;
     }
-    else
-    {
-        // Build new path string
-        char new_path[1024] = {0};
-        int i = 1;
-        while (args[i] != NULL)
-        {
-            strcat(new_path, args[i]);
-            strcat(new_path, ":");
-            i++;
-        }
-        // Remove trailing colon
-        new_path[strlen(new_path) - 1] = '\0';
 
-        // Set new path
-        if (setenv("PATH", new_path, 1) == -1)
-        {
-            perror("setenv");
-            return 1;
-        }
+    // Build new path string
+    char new_path[1024] = {0};
+    int i = 1;
+    while (args[i] != NULL)
+    {
+        strcat(new_path, args[i]);
+        strcat(new_path, ":");
+        i++;
+    }
+
+    // Concatenate new path to existing path
+    strcat(path, ":");
+    strcat(path, new_path);
+
+    // Set new path
+    if (setenv("PATH", path, 1) == -1)
+    {
+        perror("setenv");
+        return 1;
     }
 
     return 0;

@@ -207,7 +207,7 @@ int main(int argc, char *argv[])
                     redirIndex--;
                 }
 
-                if (strcmp(args[redirIndex], ">") != 0 || args[i - 1] == NULL)
+                if (strcmp(args[redirIndex], ">") != 0 || args[i - 1] == NULL || args[i - 1] == ">")
                 {
                     fprintf(stderr, "An error has occurred\n");
                     fucking_bother = 0;
@@ -234,7 +234,7 @@ int main(int argc, char *argv[])
                 i -= 2;
             }
 
-            fprintf(stderr, "do I bother? %d", fucking_bother);
+            fprintf(stderr, "do I bother? %d \n", fucking_bother);
             if (fucking_bother)
             {
                 pid_t pid = fork();

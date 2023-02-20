@@ -130,18 +130,12 @@ int main(int argc, char *argv[])
 
         // tokenization
         // gets rid of leading tabs
-        while (*input == '\t')
+        while (*input == '\t' || *input == '\n')
         {
             input++;
         }
 
-        // Remove leading newline character
-        char *ptr = input;
-        while (*ptr == '\n')
-        {
-            ptr++;
-        }
-        input = ptr;
+
         input[strcspn(input, "\n")] = '\0';
         fprintf(stderr, "getting line%s\n", input);
         char *args[MAX_INPUT];

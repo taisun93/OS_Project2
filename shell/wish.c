@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
                     if (access(full_path, X_OK) == 0)
                     {
                         // Check for shell redirection
-                        int fd;
+                        int fd = -1;
                         if (args[i - 2] != NULL && strcmp(args[i - 2], ">") == 0)
                         {
                             char *filename = args[i - 1];

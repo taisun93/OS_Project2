@@ -163,7 +163,6 @@ int main(int argc, char *argv[])
         {
             path(args);
         }
-
         // execute shit
         else
         {
@@ -171,6 +170,7 @@ int main(int argc, char *argv[])
             // Child process
             char *new_args[MAX_ARGS];
             int i;
+
             for (i = 0; args[i] != NULL; i++)
             {
                 // fprintf(stdout, "start start %s \n", args[i]);
@@ -246,6 +246,6 @@ int main(int argc, char *argv[])
         }
     }
     free(input);
-    
+
     return 0;
 }

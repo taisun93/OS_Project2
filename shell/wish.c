@@ -239,9 +239,13 @@ int main(int argc, char *argv[])
                 continue;
             }
             // redirect here
-            fd = open(redirect_target, O_CREAT | O_WRONLY | O_TRUNC, 0644);
-            dup2(fd, STDOUT_FILENO);
-            dup2(fd, STDERR_FILENO);
+            if (redirect)
+            {
+                fd = open(redirect_target, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+                dup2(fd, STDOUT_FILENO);
+                dup2(fd, STDERR_FILENO);
+            }
+
             pid_t pid = fork();
             if (pid == 0)
             {

@@ -135,13 +135,13 @@ int main(int argc, char *argv[])
             input++;
         }
 
-        // Remove trailing newline character
-        int len = strlen(input);
-        if (input[len - 1] == '\n')
+        // Remove leading newline character
+        char *ptr = input;
+        while (*ptr == '\n')
         {
-            input[len - 1] = '\0';
+            ptr++;
         }
-
+        input = ptr;
         input[strcspn(input, "\n")] = '\0';
         fprintf(stderr, "getting line%s\n", input);
         char *args[MAX_INPUT];

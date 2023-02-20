@@ -176,6 +176,7 @@ int main(int argc, char *argv[])
                 // fprintf(stdout, "start start %s \n", args[i]);
                 if (strcmp(args[i], ">") == 0)
                 {
+                    fprintf(stderr, "> occuring\n");
                     if (redirect)
                     {
                         fprintf(stderr, "An error has occurred\n");
@@ -207,7 +208,6 @@ int main(int argc, char *argv[])
             if (dir == NULL)
             {
                 fprintf(stderr, "An error has occurred\n");
-
                 continue;
             }
 

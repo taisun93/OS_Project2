@@ -299,7 +299,7 @@ int main(int argc, char *argv[])
 
             if (redirect)
             {
-                dup2(saved_stdout, 1)
+                dup2(saved_stdout, 1);
                 close(fd);
             }
         }

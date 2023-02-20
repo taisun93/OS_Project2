@@ -183,79 +183,87 @@ int main(int argc, char *argv[])
 
                 while (dir != NULL)
                 {
-                    // Check for shell redirection
-                    int fd = -1;
-                    if (i > 0 && strcmp(args[i - 1], ">") == 0)
+                    char full_path[strlen(dir) + strlen(args[0]) + 2];
+                    sprintf(full_path, "%s/%s", dir, args[0]);
+                    if (access(full_path, X_OK) == 0)
                     {
-                        if (i == 1)
+                        // Check for shell redirection
+                        int fd = -1;
+                        int fuckingIssues = 0;
+                        if (i >= 2 && args[i - 2] != NULL && strstr(args[i - 2], ">") != NULL)
                         {
-                            fprintf(stderr, "Error: no filename provided for output redirection\n");
-                            continue;
-                        }
-                        else if (i == 2)
-                        {
-                            fprintf(stderr, "Error: no command provided for output redirection\n");
-                            continue;
-                        }
-                        else if (i == 3 && strcmp(args[i - 2], ">") == 0)
-                        {
-                            fprintf(stderr, "Error: no filename provided for output redirection\n");
-                            continue;
+                            fuckingIssues = 1;
+                            int redirIndex = i - 2;
+                            while (redirIndex > 0 && strcmp(args[redirIndex], ">") != 0)
+                            {
+                                redirIndex--;
+                            }
+
+                            if (strcmp(args[redirIndex], ">") != 0 || args[i - 1] == NULL)
+                            {
+                                fprintf(stderr, "Invalid command syntax\n");
+                                break;
+                            }
+
+                            char *filename = args[i - 1];
+                            fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC);
+                            if (fd == -1)
+                            {
+                                fprintf(stderr, "Unable to open output file %s: %s\n", filename, strerror(errno));
+                                exit(EXIT_FAILURE);
+                            }
+
+                            // Redirect standard output to file
+                            if (dup2(fd, STDOUT_FILENO) == -1)
+                            {
+                                fprintf(stderr, "Unable to redirect standard output: %s\n", strerror(errno));
+                                exit(EXIT_FAILURE);
+                            }
+
+                            // Redirect standard error to file
+                            if (dup2(fd, STDERR_FILENO) == -1)
+                            {
+                                fprintf(stderr, "Unable to redirect standard error: %s\n", strerror(errno));
+                                exit(EXIT_FAILURE);
+                            }
+
+                            new_args[i - 2] = NULL;
+                            new_args[i - 1] = NULL;
+                            i -= 2;
+                            fuckingIssues = 0;
                         }
 
-                        char *filename = args[i - 1];
-                        fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC);
-                        if (fd == -1)
+                        if (!fuckingIssues && execv(full_path, new_args) == -1)
                         {
-                            fprintf(stderr, "Unable to open output file %s: %s\n", filename, strerror(errno));
+                            fprintf(stderr, "An error occurred while executing the command\n");
                             exit(EXIT_FAILURE);
                         }
 
-                        // Redirect standard output to file
-                        if (dup2(fd, STDOUT_FILENO) == -1)
+                        if (i >= 2 && args[i - 2] != NULL && strcmp(args[i - 2], ">") == 0)
                         {
-                            fprintf(stderr, "Unable to redirect standard output: %s\n", strerror(errno));
-                            exit(EXIT_FAILURE);
+                            close(fd);
                         }
-
-                        // Redirect standard error to file
-                        if (dup2(fd, STDERR_FILENO) == -1)
-                        {
-                            fprintf(stderr, "Unable to redirect standard error: %s\n", strerror(errno));
-                            exit(EXIT_FAILURE);
-                        }
-
-                        // Remove the redirection tokens from the args array
-                        args[i - 1] = NULL;
-                        args[i - 2] = NULL;
-                        i -= 2; // Decrement i since we removed two tokens from the array
+                        break;
                     }
+                    dir = strtok(NULL, ":");
+                }
 
-                    if (execv(full_path, new_args) == -1)
-                    {
-                        fprintf(stderr, "An error occurred while executing the command\n");
-                        exit(EXIT_FAILURE);
-                    }
-
-                    if (fd != -1)
-                    {
-                        close(fd);
-                    }
-                    break;
-                }
-                else if (pid < 0)
-                {
-                    perror("fork");
-                    exit(EXIT_FAILURE);
-                }
-                else
-                {
-                    wait(NULL);
-                }
+                fprintf(stderr, "An error has occurred\n");
+                exit(EXIT_FAILURE);
+            }
+            else if (pid < 0)
+            {
+                perror("fork");
+                exit(EXIT_FAILURE);
+            }
+            else
+            {
+                wait(NULL);
             }
         }
-
-        free(input);
-
-        return 0;
     }
+
+    free(input);
+
+    return 0;
+}

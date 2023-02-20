@@ -128,6 +128,7 @@ int main(int argc, char *argv[])
 
         char *args[MAX_INPUT / 2 + 1];
         int num_args = 0;
+        fprintf(stdout, "-1");
 
         char *token = strtok(input, " ");
         while (token != NULL && num_args < MAX_INPUT / 2 + 1)
@@ -165,6 +166,7 @@ int main(int argc, char *argv[])
         // execute shit
         else
         {
+            fprintf(stdout, "0");
 
             pid_t pid = fork();
             if (pid == 0)

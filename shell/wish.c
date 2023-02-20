@@ -125,26 +125,18 @@ int main(int argc, char *argv[])
             }
         }
 
-        // tokenization
+
         input[strcspn(input, "\n")] = '\0';
+        // fprintf(stdout, "getting line%s\n", input);
         char *args[MAX_INPUT];
         int num_args = 0;
-        char *arg;
-        while ((arg = strsep(&input, " ")) != NULL && num_args < MAX_INPUT)
+        // fprintf(stdout, "-1\n");
+
+        char *token = strtok(input, " ");
+        while (token != NULL && num_args < MAX_INPUT)
         {
-            if (strcmp(arg, ">") != 0 && strstr(arg, ">") != NULL)
-            {
-                char *arg1, *arg2;
-                arg1 = strsep(&arg, ">");
-                arg2 = strsep(&arg, ">");
-                args[num_args++] = arg1;
-                args[num_args++] = ">";
-                args[num_args++] = arg2;
-            }
-            else
-            {
-                args[num_args++] = arg;
-            }
+            args[num_args++] = token;
+            token = strtok(NULL, " ");
         }
         args[num_args] = NULL; // Set last argument to NULL
 
@@ -262,14 +254,14 @@ int main(int argc, char *argv[])
                 if (execv(full_path, new_args) == -1)
                 {
                     fprintf(stderr, "An error has occurred\n");
-
+                    
                     exit(EXIT_FAILURE);
                 }
             }
             else if (pid < 0)
             {
                 fprintf(stderr, "An error has occurred\n");
-
+                
                 exit(EXIT_FAILURE);
             }
             else
@@ -279,10 +271,9 @@ int main(int argc, char *argv[])
             }
             // close(fd);
         }
-        free(input);
     }
-    // close(fd);
-    
+    close(fd);
+    free(input);
 
     return 0;
 }

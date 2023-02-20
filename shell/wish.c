@@ -224,6 +224,9 @@ int main(int argc, char *argv[])
                                 fprintf(stderr, "Unable to redirect standard error: %s\n", strerror(errno));
                                 exit(EXIT_FAILURE);
                             }
+
+                            new_args[i - 2] = NULL;
+                            new_args[i - 1] = NULL;
                         }
 
                         if (execv(full_path, new_args) == -1)

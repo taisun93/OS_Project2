@@ -137,38 +137,30 @@ int main(int argc, char *argv[])
                 continue; // skip over empty tokens
             }
 
-            if (*arg == '>')
-            {
-                // add ">" as a separate argument
-                args[num_args++] = arg;
-            }
-            else
-            {
-                char *filename = NULL;
-                char *ptr = arg;
+            char *filename = NULL;
+            char *ptr = arg;
 
-                while (*ptr != '\0')
+            while (*ptr != '\0')
+            {
+                if (*ptr == '>')
                 {
-                    if (*ptr == '>')
-                    {
-                        // separate filename and add as separate argument
-                        *ptr++ = '\0';
-                        filename = ptr;
-                        break;
-                    }
-                    ptr++;
-                }
-
-                // add current argument (which might have been split from ">") and filename as separate arguments
-                args[num_args++] = arg;
-                if (filename != NULL)
-                {
-                    args[num_args++] = ">";
-                    args[num_args++] = filename;
+                    // separate filename and add as separate arguments
+                    *ptr++ = '\0';
+                    filename = ptr;
                     break;
                 }
+                ptr++;
+            }
+
+            // add current argument (which might have been split from ">") and filename as separate arguments
+            args[num_args++] = arg;
+            if (filename != NULL)
+            {
+                args[num_args++] = ">";
+                args[num_args++] = filename;
             }
         }
+
         args[num_args] = NULL; // null terminate arguments
 
         if (strcmp(args[0], "exit") == 0)

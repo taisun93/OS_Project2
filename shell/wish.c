@@ -118,6 +118,7 @@ int main(int argc, char *argv[])
         }
         else
         {
+            fprintf(stdout, "getting line\n");
             if (getline(&input, &input_len, input_file) == -1)
             {
                 break;
@@ -128,7 +129,7 @@ int main(int argc, char *argv[])
 
         char *args[MAX_INPUT / 2 + 1];
         int num_args = 0;
-        fprintf(stdout, "-1");
+        fprintf(stdout, "-1\n");
 
         char *token = strtok(input, " ");
         while (token != NULL && num_args < MAX_INPUT / 2 + 1)
@@ -166,7 +167,7 @@ int main(int argc, char *argv[])
         // execute shit
         else
         {
-            fprintf(stdout, "0");
+            fprintf(stdout, "0\n");
 
             pid_t pid = fork();
             if (pid == 0)

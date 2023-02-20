@@ -201,12 +201,13 @@ int main(int argc, char *argv[])
                 }
                 dir = strtok(NULL, ":");
             }
+            free(path);
 
             // can't find command
             if (dir == NULL)
             {
                 fprintf(stderr, "An error has occurred\n");
-                free(path);
+
                 continue;
             }
 
@@ -216,9 +217,9 @@ int main(int argc, char *argv[])
                 fprintf(stderr, "An error has occurred\n");
                 free(input);
 
-                break;
+                continue;
             }
-            free(path);
+
 
             pid_t pid = fork();
             if (pid == 0)

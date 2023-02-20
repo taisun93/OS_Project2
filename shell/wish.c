@@ -176,12 +176,6 @@ int main(int argc, char *argv[])
                 // fprintf(stdout, "start start %s \n", args[i]);
                 if (strcmp(args[i], ">") == 0)
                 {
-
-                    if (redirect)
-                    {
-                        fprintf(stderr, "An error has occurred\n");
-                        break;
-                    }
                     redirect = 1;
                 }
                 new_args[i] = args[i];
@@ -217,6 +211,7 @@ int main(int argc, char *argv[])
                 fprintf(stderr, "An error has occurred\n");
                 continue;
             }
+
             // too many elements on redirect
             if(redirect && i >= 3){
                 fprintf(stderr, "An error has occurred\n");

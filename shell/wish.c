@@ -129,23 +129,39 @@ int main(int argc, char *argv[])
         char *args[MAX_INPUT];
         int num_args = 0;
 
-        char *input_copy = strdup(input);
-        char *token, *saveptr;
-
-        for (token = strsep(&input_copy, " "); token != NULL && num_args < MAX_INPUT; token = strsep(&input_copy, " "))
+        char *token = input;
+        char *rest = NULL;
+        while ((token = strsep(&rest, " ")) != NULL && num_args < MAX_INPUT)
         {
-            if (strcmp(token, ">") == 0)
+            if (strcmp(token, "") == 0)
+            {
+                continue;
+            }
+
+            char *found = strstr(token, ">");
+            if (found != NULL)
+            {
+                if (strlen(token) > 1)
+                {
+                    // ">" is not the only character in the token, need to split it
+                    *found = '\0';
+                    args[num_args++] = token;
+                    args[num_args++] = ">";
+                    args[num_args++] = found + 1;
+                }
+                else
+                {
+                    // Only ">" in token, treat it as a separate argument
+                    args[num_args++] = ">";
+                }
+            }
+            else
             {
                 args[num_args++] = token;
-                if ((token = strsep(&input_copy, " ")) != NULL && num_args < MAX_INPUT)
-                {
-                    args[num_args++] = token;
-                }
-                break;
             }
-            args[num_args++] = token;
         }
-        args[num_args] = NULL;
+        args[num_args] = NULL; // Set last argument to NULL
+
         if (strcmp(args[0], "exit") == 0)
         {
             if (args[1] != NULL)

@@ -129,16 +129,22 @@ int main(int argc, char *argv[])
         }
 
         // tokenization
+        //gets rid of leading tabs
+        while (*input == '\t')
+        {
+            input++;
+        }
+
         input[strcspn(input, "\n")] = '\0';
-        fprintf(stderr, "getting line%s\n", input);
+        // fprintf(stderr, "getting line%s\n", input);
         char *args[MAX_INPUT];
         int num_args = 0;
         // fprintf(stdout, "-1\n");
-        fprintf(stdout, "got the line%s\n", input);
+        // fprintf(stdout, "got the line%s\n", input);
         char *token = strtok(input, " ");
         while (token != NULL && num_args < MAX_INPUT)
         {
-            fprintf(stderr, "token here %s \n", token);
+            // fprintf(stderr, "token here %s \n", token);
             // Trim leading whitespace from token
             while (isspace(*token))
             {

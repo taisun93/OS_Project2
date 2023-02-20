@@ -124,39 +124,28 @@ int main(int argc, char *argv[])
                 break;
             }
         }
-        //tokenization
+        // tokenization
         input[strcspn(input, "\n")] = '\0';
         char *args[MAX_INPUT];
         int num_args = 0;
 
-        char *token, *str, *endptr;
-        str = input;
-        while ((token = strsep(&str, " ")) != NULL && num_args < MAX_INPUT)
-        {
-            if (token[0] == '\0')
-                continue; // ignore empty tokens
-            if (token[0] == '>')
-            {
-                args[num_args++] = token;
-            }
-            else
-            {
-                args[num_args++] = token;
-                if ((endptr = strpbrk(token, ">")) != NULL && endptr[0] == '>' && endptr[1] == '\0')
-                {
-                    // found > at end of token, break it into two tokens
-                    *endptr = '\0';
-                    args[num_args++] = ">";
-                    if (str != NULL)
-                    {
-                        args[num_args++] = str;
-                        break;
-                    }
-                }
-            }
-        }
-        args[num_args] = NULL; // Set last argument to NULL
+        char *input_copy = strdup(input);
+        char *token, *saveptr;
 
+        for (token = strsep(&input_copy, " "); token != NULL && num_args < MAX_INPUT; token = strsep(&input_copy, " "))
+        {
+            if (strcmp(token, ">") == 0)
+            {
+                args[num_args++] = token;
+                if ((token = strsep(&input_copy, " ")) != NULL && num_args < MAX_INPUT)
+                {
+                    args[num_args++] = token;
+                }
+                break;
+            }
+            args[num_args++] = token;
+        }
+        args[num_args] = NULL;
         if (strcmp(args[0], "exit") == 0)
         {
             if (args[1] != NULL)

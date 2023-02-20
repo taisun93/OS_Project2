@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
         char *args[MAX_INPUT];
         int num_args = 0;
 
-        char *arg = NULL;
+        char *arg;
         while ((arg = strsep(&input, " ")) != NULL && num_args < MAX_INPUT)
         {
             if (*arg == '\0')
@@ -137,32 +137,22 @@ int main(int argc, char *argv[])
                 continue; // skip over empty tokens
             }
 
-            char *filename = NULL;
-            char *ptr = arg;
-
-            while (*ptr != '\0')
+            if (strstr(arg, ">") != NULL)
             {
-                if (*ptr == '>')
-                {
-                    // separate filename and add as separate arguments
-                    *ptr++ = '\0';
-                    filename = ptr;
-                    break;
-                }
-                ptr++;
-            }
-
-            // add current argument (which might have been split from ">") and filename as separate arguments
-            args[num_args++] = arg;
-            if (filename != NULL)
-            {
-                args[num_args++] = ">";
+                char *filename = strsep(&arg, ">");
                 args[num_args++] = filename;
+                args[num_args++] = ">";
+                args[num_args++] = arg;
+            }
+            else
+            {
+                args[num_args++] = arg;
             }
         }
 
         args[num_args] = NULL; // null terminate arguments
 
+        //start parsing
         if (strcmp(args[0], "exit") == 0)
         {
             if (args[1] != NULL)

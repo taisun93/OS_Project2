@@ -168,11 +168,22 @@ int main(int argc, char *argv[])
         else
         {
             int fucking_bother = 1;
+            int redirect = 0;
             // Child process
             char *new_args[MAX_ARGS];
             int i;
             for (i = 0; args[i] != NULL; i++)
             {
+                if (strcmp(args[i], ">") != 0)
+                {
+                    if(redirect){
+                        //too many redirects
+                        fucking_bother = 0;
+                        fprintf(stderr, "An error has occurred\n");
+                        break;
+                    }
+                    redirect = 1;
+                }
                 new_args[i] = args[i];
             }
             new_args[i] = NULL;
@@ -197,14 +208,19 @@ int main(int argc, char *argv[])
                 continue;
             }
 
+            // can't end on >
+            if (strcmp(args[i - 1], ">") != 0)
+            {
+                fprintf(stderr, "An error has occurred\n");
+                fucking_bother = 0;
+                break;
+            }
+
             // Check for shell redirection
             int fd = -1;
             if (i >= 2 && args[i - 2] != NULL && strstr(args[i - 2], ">") != NULL)
             {
-                for (int i = 0; args[i] != NULL; i++)
-                {
-                    fprintf(stdout, "shit %s\n", args[i]);
-                }
+
                 int redirIndex = i - 2;
                 while (redirIndex > 0 && strcmp(args[redirIndex], ">") != 0)
                 {

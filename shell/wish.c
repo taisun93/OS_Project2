@@ -280,10 +280,10 @@ int main(int argc, char *argv[])
             }
             // close(fd);
         }
+        free(input_copy);
     }
     // close(fd);
     free(input);
-    free(input_copy);
 
     return 0;
 }

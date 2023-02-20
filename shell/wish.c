@@ -218,51 +218,15 @@ int main(int argc, char *argv[])
                 break;
             }
 
-            // Check for shell redirection
-            // int fd = -1;
-            // if (i >= 2 && args[i - 2] != NULL && strstr(args[i - 2], ">") != NULL)
-            // {
-
-            //     int redirIndex = i - 2;
-            //     while (redirIndex > 0 && strcmp(args[redirIndex], ">") != 0)
-            //     {
-            //         redirIndex--;
-            //     }
-
-            //     if (strcmp(args[redirIndex], ">") != 0 || args[i - 1] == NULL || strcmp(args[i - 1], ">") != 0)
-            //     {
-            //         fprintf(stderr, "An error has occurred\n");
-            //         break;
-            //     }
-
-            //     char *filename = args[i - 1];
-            //     fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-            //     if (fd == -1)
-            //     {
-            //         fprintf(stderr, "An error has occurred\n");
-            //         exit(EXIT_FAILURE);
-            //     }
-
-            //     // Redirect standard output and standard error to file
-            //     if (dup2(fd, STDOUT_FILENO) == -1 || dup2(fd, STDERR_FILENO) == -1)
-            //     {
-            //         fprintf(stderr, "An error has occurred\n");
-            //         exit(EXIT_FAILURE);
-            //     }
-
-            //     new_args[i - 2] = NULL;
-            //     new_args[i - 1] = NULL;
-            //     i -= 2;
-            // }
+            int j;
+            for (j = 0; new_args[j] != NULL; j++)
+            {
+                printf("new_args[%d]: %s\n", j, new_args[j]);
+            }
 
             pid_t pid = fork();
             if (pid == 0)
             {
-                int j;
-                for (j = 0; new_args[j] != NULL; j++)
-                {
-                    printf("new_args[%d]: %s\n", j, new_args[j]);
-                }
 
                 if (execv(full_path, new_args) == -1)
                 {

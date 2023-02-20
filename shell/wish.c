@@ -81,7 +81,6 @@ int path(char *args[])
 
 int main(int argc, char *argv[])
 {
-    fprintf(stdout, "start of main\n");
     int interactive = (argc == 1) ? 1 : 0;
     FILE *input_file = NULL;
     setenv("PATH", "/bin", 1);
@@ -107,8 +106,6 @@ int main(int argc, char *argv[])
     char *input = NULL;
     size_t input_len = 0;
 
-    fprintf(stdout, "before while loop \n");
-
     while (1)
     {
         // Gets next command
@@ -123,7 +120,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-            fprintf(stdout, "getting line\n");
+            // fprintf(stdout, "getting line\n");
             if (getline(&input, &input_len, input_file) == -1)
             {
                 break;
@@ -131,17 +128,16 @@ int main(int argc, char *argv[])
         }
 
         // tokenization
-        fprintf(stdout, "before input \n");
         input[strcspn(input, "\n")] = '\0';
         // fprintf(stdout, "getting line%s\n", input);
         char *args[MAX_INPUT];
         int num_args = 0;
         // fprintf(stdout, "-1\n");
-        fprintf(stdout, "got the line%s\n", input);
+        // fprintf(stdout, "got the line%s\n", input);
         char *token = strtok(input, " ");
         while (token != NULL && num_args < MAX_INPUT)
         {
-            fprintf(stdout, "blah %s \n", token);
+            // fprintf(stdout, "blah %s \n", token);
             // Trim leading whitespace from token
             while (isspace(*token))
             {
@@ -162,7 +158,7 @@ int main(int argc, char *argv[])
             // gets next token
             token = strtok(NULL, " ");
         }
-        fprintf(stdout, "-1\n");
+        // fprintf(stdout, "-1\n");
         args[num_args] = NULL; // Set last argument to NULL
 
         if (strcmp(args[0], "exit") == 0)

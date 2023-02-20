@@ -127,12 +127,11 @@ int main(int argc, char *argv[])
 
         // tokenization
         input[strcspn(input, "\n")] = '\0';
-        // fprintf(stdout, "getting line%s\n", input);
+        char *input_copy = strdup(input);
         char *args[MAX_INPUT];
         int num_args = 0;
-        // fprintf(stdout, "-1\n");
         char *arg;
-        while ((arg = strsep(&input, " ")) != NULL && num_args < MAX_INPUT)
+        while ((arg = strsep(&input_copy, " ")) != NULL && num_args < MAX_INPUT)
         {
             if (strcmp(arg, ">") != 0 && strstr(arg, ">") != NULL)
             {
@@ -284,6 +283,7 @@ int main(int argc, char *argv[])
     }
     // close(fd);
     free(input);
+    free(input_copy);
 
     return 0;
 }

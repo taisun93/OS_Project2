@@ -45,21 +45,19 @@ int path(char *args[])
             return 1;
         }
     }
+    
     else
     {
         // Build new path string
-        char new_path[1024] = {0};
+        char *path_env = getenv("PATH");
+        char new_path[strlen(path_env) + 1];
+        strcpy(new_path, path_env);
         int i = 1;
-        while (args[i] != NULL && (strlen(new_path) + strlen(args[i]) + 1) < 1024)
+        while (args[i] != NULL)
         {
-            strcat(new_path, args[i]);
             strcat(new_path, ":");
+            strcat(new_path, args[i]);
             i++;
-        }
-        // Remove trailing colon
-        if (new_path[strlen(new_path) - 1] == ':')
-        {
-            new_path[strlen(new_path) - 1] = '\0';
         }
 
         // Set new path
@@ -68,11 +66,15 @@ int path(char *args[])
             perror("setenv");
             return 1;
         }
-        printf("New PATH: %s\n", new_path);
+        else
+        {
+            // Echo the new path
+            fprintf(stdout, "New PATH=%s\n", new_path);
+        }
     }
-
     return 0;
 }
+
 
 int main(int argc, char *argv[])
 {

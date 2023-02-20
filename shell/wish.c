@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
         if (token == NULL)
         {
             // continue;
-            fprintf(stderr, "null token\n");
+            // fprintf(stderr, "null token\n");
         }
 
         while (token != NULL && num_args < MAX_INPUT)
@@ -170,9 +170,10 @@ int main(int argc, char *argv[])
         }
 
         args[num_args] = NULL; // Set last argument to NULL
-        
-        if(args[0] == NULL){
-            fprintf(stderr, "blah blah \n");
+
+        if (args[0] == NULL)
+        {
+            // fprintf(stderr, "blah blah \n");
         }
         else if (strcmp(args[0], "exit") == 0)
         {
@@ -326,8 +327,11 @@ int main(int argc, char *argv[])
             }
         }
     }
-
-    free(input);
+    if (input != NULL)
+    {
+        /* code */
+        free(input);
+    }
 
     return 0;
 }

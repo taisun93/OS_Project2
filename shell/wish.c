@@ -236,7 +236,7 @@ int main(int argc, char *argv[])
                             
                         }
 
-                        printf(stdout, "Fucking issues again: %d\n", fuckingIssues);
+                        fprintf(stdout, "Fucking issues again: %d\n", fuckingIssues);
 
                         if (!fuckingIssues && execv(full_path, new_args) == -1)
                         {

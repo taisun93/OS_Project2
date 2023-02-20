@@ -169,7 +169,6 @@ int main(int argc, char *argv[])
             int redirect = 0;
             // Child process
             char *new_args[MAX_ARGS];
-            char *redirect_target[MAX_ARGS];
             int i, fd;
 
             for (i = 0; args[i] != NULL; i++)

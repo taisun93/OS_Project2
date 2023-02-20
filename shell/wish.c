@@ -202,8 +202,6 @@ int main(int argc, char *argv[])
                 dir = strtok(NULL, ":");
             }
 
-            // fprintf(stdout, "full path is %s \n", full_path);
-
             // can't find command
             if (dir == NULL)
             {
@@ -238,11 +236,7 @@ int main(int argc, char *argv[])
             {
                 wait(NULL);
             }
-
-            // if (fd != -1)
-            // {
-            //     close(fd);
-            // }
+            free(path);
         }
     }
     free(input);

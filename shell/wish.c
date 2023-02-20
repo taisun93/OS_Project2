@@ -131,22 +131,24 @@ int main(int argc, char *argv[])
         char *args[MAX_INPUT];
         int num_args = 0;
         // fprintf(stdout, "-1\n");
-        char *arg;
-        while ((arg = strsep(&input, " ")) != NULL && num_args < MAX_INPUT)
+
+        char *token = strtok(input, " ");
+        while (token != NULL && num_args < MAX_INPUT)
         {
-            // if (strcmp(arg, ">") != 0 && strstr(arg, ">") != NULL)
-            // {
-            //     char *arg1, *arg2;
-            //     arg1 = strsep(&arg, ">");
-            //     arg2 = strsep(&arg, ">");
-            //     args[num_args++] = arg1;
-            //     args[num_args++] = ">";
-            //     args[num_args++] = arg2;
-            // }
-            // else
-            // {
-                args[num_args++] = arg;
-            // }
+            if (strcmp(token, ">") != 0 && strstr(arg, ">") != NULL)
+            {
+                char *arg1, *arg2;
+                arg1 = strsep(&token, ">");
+                arg2 = strsep(&token, ">");
+                args[num_args++] = arg1;
+                args[num_args++] = ">";
+                args[num_args++] = arg2;
+            }
+            {
+                args[num_args++] = token;
+            }
+            //gets next token
+            token = strtok(NULL, " ");
         }
         args[num_args] = NULL; // Set last argument to NULL
 

@@ -34,6 +34,210 @@ void init_path()
     num_path++;
 }
 
+int execute_group(char **group, int *pids, int *index)
+{
+    int redir_op_index = -1;
+    int num_redir_ops = 0;
+    int num_redir_files = 0;
+
+    int i = 0;
+    for (; group[i] != NULL; i++)
+    {
+        if (num_redir_ops > 0)
+        {
+            num_redir_files++;
+        }
+
+        if (!strcmp(group[i], ">"))
+        {
+            redir_op_index = i;
+            num_redir_ops++;
+        }
+    }
+
+    if (num_redir_ops > 1 || num_redir_files > 1 ||
+        (num_redir_ops >= 1 && num_redir_files == 0))
+    {
+        log_error();
+        return 0;
+    }
+
+    char *args[MAX_TOKENS];
+    int num_args = 0; 
+    char *redir_file = NULL;
+
+    int fd = -1;
+    if (redir_op_index == -1)
+    {
+        for (int j = 1; j < i; j++)
+        {
+            args[j] = group[j];
+            num_args++;
+        }
+        args[i] = NULL;
+    }
+    else
+    {
+        for (int j = 1; j < redir_op_index; j++)
+        {
+            args[j] = group[j];
+            num_args++;
+        }
+        args[redir_op_index] = NULL; 
+        redir_file = group[redir_op_index + 1];
+
+        if (access(redir_file, F_OK) != -1)
+        {
+            if (access(redir_file, W_OK) == -1)
+            {
+                log_error();
+                return 0;
+            }
+
+            struct stat s;
+            if (stat(redir_file, &s) == -1)
+            {
+                log_error();
+                return 0;
+            }
+            if (S_ISDIR(s.st_mode))
+            {
+                log_error();
+                return 0;
+            }
+
+            fd = open(redir_file, O_TRUNC | O_WRONLY);
+            if (fd == -1)
+            {
+                log_error();
+                return 0;
+            }
+        }
+        else
+        {
+            fd = open(redir_file, O_CREAT | O_WRONLY);
+            if (fd == -1)
+            {
+                log_error();
+                return 0;
+            }
+        }
+    }
+
+    char *cmd = group[0];
+
+    if (!strcmp(cmd, "exit"))
+    {
+        if (num_args > 0)
+        {
+            log_error();
+        }
+        return 1;
+    }
+
+    // change directory.
+    if (!strcmp(cmd, "cd"))
+    {
+        if (num_args == 0 || num_args > 1)
+        {
+            log_error();
+            return 0;
+        }
+        if (chdir(args[1]) == -1)
+        {
+            log_error();
+            return 0;
+        }
+        return 0;
+    }
+
+    if (!strcmp(cmd, "path"))
+    {
+        free_path();
+        for (int i = 0; i < num_args; i++)
+        {
+            if (append_path(args[i + 1]) == -1)
+            {
+                log_error();
+                return 0;
+            }
+        }
+        return 0;
+    }
+
+    int not_cwd = 0;
+    if (access(cmd, X_OK) == -1)
+    {
+        not_cwd = 1;
+        // if cmd is not in the current directory, search paths.
+        int good = 0;
+        for (int i = 0; i < num_path; i++)
+        {
+            // count on the null terminate char and the link '/'.
+            char *cmd0 = malloc(strlen(path[i]) + strlen(cmd) + 2);
+            strcpy(cmd0, path[i]);
+            cmd0[strlen(path[i])] = '/';
+            strcpy(cmd0 + strlen(path[i]) + 1, cmd);
+            if (access(cmd0, X_OK) != -1)
+            {
+                good = 1;
+            }
+            if (good)
+            {
+                cmd = cmd0;
+                break;
+            }
+            else
+            {
+                free(cmd0);
+            }
+        }
+        if (!good)
+        {
+            log_error();
+            return 0;
+        }
+    }
+
+    args[0] = group[0];
+
+    int pid;
+    if ((pid = fork()) == 0)
+    {
+        // child process.
+
+        // FIXME: properly shutdown redirection file.
+
+        // set redirection if required.
+        if (redir_op_index != -1)
+        {
+            if (dup2(fd, STDOUT_FILENO) == -1)
+            {
+                log_error();
+                _exit(1);
+            }
+        }
+
+        if (execv(cmd, args) == -1)
+        {
+            log_error();
+            _exit(1);
+        }
+    }
+    else
+    {
+        pids[*index] = pid;
+        *index = *index + 1;
+        if (not_cwd)
+        {
+            free(cmd);
+        }
+    }
+
+    return 0;
+}
+
+
 int execute_line(char *line_)
 {
     char line0[MAX_LINE];
@@ -313,208 +517,6 @@ void Write(int fd, const void *buf, size_t n)
     }
 }
 
-int execute_group(char **group, int *pids, int *index)
-{
-    int redir_op_index = -1;
-    int num_redir_ops = 0;
-    int num_redir_files = 0;
-
-    int i = 0;
-    for (; group[i] != NULL; i++)
-    {
-        if (num_redir_ops > 0)
-        {
-            num_redir_files++;
-        }
-
-        if (!strcmp(group[i], ">"))
-        {
-            redir_op_index = i;
-            num_redir_ops++;
-        }
-    }
-
-    if (num_redir_ops > 1 || num_redir_files > 1 ||
-        (num_redir_ops >= 1 && num_redir_files == 0))
-    {
-        log_error();
-        return 0;
-    }
-
-    char *args[MAX_TOKENS];
-    int num_args = 0; 
-    char *redir_file = NULL;
-
-    int fd = -1;
-    if (redir_op_index == -1)
-    {
-        for (int j = 1; j < i; j++)
-        {
-            args[j] = group[j];
-            num_args++;
-        }
-        args[i] = NULL;
-    }
-    else
-    {
-        for (int j = 1; j < redir_op_index; j++)
-        {
-            args[j] = group[j];
-            num_args++;
-        }
-        args[redir_op_index] = NULL; 
-        redir_file = group[redir_op_index + 1];
-
-        if (access(redir_file, F_OK) != -1)
-        {
-            if (access(redir_file, W_OK) == -1)
-            {
-                log_error();
-                return 0;
-            }
-
-            struct stat s;
-            if (stat(redir_file, &s) == -1)
-            {
-                log_error();
-                return 0;
-            }
-            if (S_ISDIR(s.st_mode))
-            {
-                log_error();
-                return 0;
-            }
-
-            fd = open(redir_file, O_TRUNC | O_WRONLY);
-            if (fd == -1)
-            {
-                log_error();
-                return 0;
-            }
-        }
-        else
-        {
-            fd = open(redir_file, O_CREAT | O_WRONLY);
-            if (fd == -1)
-            {
-                log_error();
-                return 0;
-            }
-        }
-    }
-
-    char *cmd = group[0];
-
-    if (!strcmp(cmd, "exit"))
-    {
-        if (num_args > 0)
-        {
-            log_error();
-        }
-        return 1;
-    }
-
-    // change directory.
-    if (!strcmp(cmd, "cd"))
-    {
-        if (num_args == 0 || num_args > 1)
-        {
-            log_error();
-            return 0;
-        }
-        if (chdir(args[1]) == -1)
-        {
-            log_error();
-            return 0;
-        }
-        return 0;
-    }
-
-    if (!strcmp(cmd, "path"))
-    {
-        free_path();
-        for (int i = 0; i < num_args; i++)
-        {
-            if (append_path(args[i + 1]) == -1)
-            {
-                log_error();
-                return 0;
-            }
-        }
-        return 0;
-    }
-
-    int not_cwd = 0;
-    if (access(cmd, X_OK) == -1)
-    {
-        not_cwd = 1;
-        // if cmd is not in the current directory, search paths.
-        int good = 0;
-        for (int i = 0; i < num_path; i++)
-        {
-            // count on the null terminate char and the link '/'.
-            char *cmd0 = malloc(strlen(path[i]) + strlen(cmd) + 2);
-            strcpy(cmd0, path[i]);
-            cmd0[strlen(path[i])] = '/';
-            strcpy(cmd0 + strlen(path[i]) + 1, cmd);
-            if (access(cmd0, X_OK) != -1)
-            {
-                good = 1;
-            }
-            if (good)
-            {
-                cmd = cmd0;
-                break;
-            }
-            else
-            {
-                free(cmd0);
-            }
-        }
-        if (!good)
-        {
-            log_error();
-            return 0;
-        }
-    }
-
-    args[0] = group[0];
-
-    int pid;
-    if ((pid = fork()) == 0)
-    {
-        // child process.
-
-        // FIXME: properly shutdown redirection file.
-
-        // set redirection if required.
-        if (redir_op_index != -1)
-        {
-            if (dup2(fd, STDOUT_FILENO) == -1)
-            {
-                log_error();
-                _exit(1);
-            }
-        }
-
-        if (execv(cmd, args) == -1)
-        {
-            log_error();
-            _exit(1);
-        }
-    }
-    else
-    {
-        pids[*index] = pid;
-        *index = *index + 1;
-        if (not_cwd)
-        {
-            free(cmd);
-        }
-    }
-
-    return 0;
-}
 
 void interactive()
 {

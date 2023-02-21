@@ -207,7 +207,7 @@ int main(int argc, char *argv[])
         // }
 
         // crazy if else begins
-        if (strcmp(args[0] == NULL)
+        if (strcmp(args[0] == NULL))
         {
             // continue;
         }

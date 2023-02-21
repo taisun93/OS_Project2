@@ -71,7 +71,7 @@ int execute_group(char **group, int *pids, int *index)
     if (num_redir_ops > 1 || num_redir_files > 1 ||
         (num_redir_ops >= 1 && num_redir_files == 0))
     {
-        log_error();
+        complain();
         return 0;
     }
 
@@ -103,26 +103,26 @@ int execute_group(char **group, int *pids, int *index)
         {
             if (access(redir_file, W_OK) == -1)
             {
-                log_error();
+                complain();
                 return 0;
             }
 
             struct stat s;
             if (stat(redir_file, &s) == -1)
             {
-                log_error();
+                complain();
                 return 0;
             }
             if (S_ISDIR(s.st_mode))
             {
-                log_error();
+                complain();
                 return 0;
             }
 
             fd = open(redir_file, O_TRUNC | O_WRONLY);
             if (fd == -1)
             {
-                log_error();
+                complain();
                 return 0;
             }
         }
@@ -131,7 +131,7 @@ int execute_group(char **group, int *pids, int *index)
             fd = open(redir_file, O_CREAT | O_WRONLY);
             if (fd == -1)
             {
-                log_error();
+                complain();
                 return 0;
             }
         }
@@ -143,7 +143,7 @@ int execute_group(char **group, int *pids, int *index)
     {
         if (num_args > 0)
         {
-            log_error();
+            complain();
         }
         return 1;
     }
@@ -153,12 +153,12 @@ int execute_group(char **group, int *pids, int *index)
     {
         if (num_args == 0 || num_args > 1)
         {
-            log_error();
+            complain();
             return 0;
         }
         if (chdir(args[1]) == -1)
         {
-            log_error();
+            complain();
             return 0;
         }
         return 0;
@@ -171,14 +171,13 @@ int execute_group(char **group, int *pids, int *index)
         {
             if (num_path > MAX_PATHS)
             {
-                log_error();
+                complain();
                 return 0;
             }
             path[num_path] = malloc(strlen(args[i + 1]) + 1);
             memset(path[num_path], 0, strlen(args[i + 1]) + 1); // redundant.
             strcpy(path[num_path], args[i + 1]);
             num_path++;
-
         }
         return 0;
     }
@@ -212,7 +211,7 @@ int execute_group(char **group, int *pids, int *index)
         }
         if (!good)
         {
-            log_error();
+            complain();
             return 0;
         }
     }
@@ -222,23 +221,18 @@ int execute_group(char **group, int *pids, int *index)
     int pid;
     if ((pid = fork()) == 0)
     {
-        // child process.
-
-        // FIXME: properly shutdown redirection file.
-
-        // set redirection if required.
         if (redir_op_index != -1)
         {
             if (dup2(fd, STDOUT_FILENO) == -1)
             {
-                log_error();
+                complain();
                 _exit(1);
             }
         }
 
         if (execv(cmd, args) == -1)
         {
-            log_error();
+            complain();
             _exit(1);
         }
     }
@@ -473,7 +467,7 @@ int execute_line(char *line_)
     {
         if (waitpid(pids[i], NULL, 0) == -1)
         {
-            log_error();
+            complain();
             for (int j = 0; j < num_groups; j++)
             {
                 free(groups[j]);
@@ -498,13 +492,16 @@ int execute_line(char *line_)
     return 0;
 }
 
-void log_error() { fprintf(stderr, "An error has occurred\n") }
+void complain()
+{
+    fprintf(stderr, "An error has occurred\n");
+}
 
 void Write(int fd, const void *buf, size_t n)
 {
     if (write(fd, buf, n) == -1)
     {
-        log_error();
+        complain();
     }
 }
 
@@ -533,7 +530,7 @@ void batch(const char *batch_file)
     FILE *f = fopen(batch_file, "r");
     if (f == NULL)
     {
-        log_error();
+        complain();
         if (line != NULL)
         {
             free(line);
@@ -550,7 +547,7 @@ void batch(const char *batch_file)
 
             if (fclose(f) == -1)
             {
-                log_error();
+                complain();
             }
             closed = 1;
             break;
@@ -561,7 +558,7 @@ void batch(const char *batch_file)
     {
         if (fclose(f) == -1)
         {
-            log_error(f);
+            complain(f);
         }
     }
 }
@@ -570,7 +567,7 @@ int main(int argc, char **argv)
 {
     if (argc > 2)
     {
-        log_error();
+        complain();
         if (line != NULL)
         {
             free(line);

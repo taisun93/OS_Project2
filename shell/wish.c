@@ -256,12 +256,11 @@ int execute_group(char **group, int *pids, int *index)
 
 int execute_line(char *line_)
 {
-    char line0[MAX_LINE];
-    memset(line0, 0, MAX_LINE);
+    char lineline[MAX_LINE];
+    memset(lineline, 0, MAX_LINE);
 
-    // preprocess line_ to erase '\t' chars.
     char *p = line_;
-    char *lp = line0;
+    char *lp = lineline;
     while (*p != '\n')
     {
         if (*p != '\t')
@@ -277,21 +276,18 @@ int execute_line(char *line_)
     }
     *lp = '\n';
 
-    if (line0[0] == '\n')
+    if (lineline[0] == '\n')
     {
-        // empty line.
         return 0;
     }
 
-    // preprocess line_ to handle varied spacing before and after the '>' sign.
     char line1[MAX_LINE];
     memset(line1, 0, MAX_LINE);
-    p = strchr(line0, '>');
+    p = strchr(lineline, '>');
     if (p != NULL)
     {
-        // the offset between the start address of line_ and the '>' sign.
-        const int off = p - line0;
-        strncpy(line1, line0, off);
+        const int off = p - lineline;
+        strncpy(line1, lineline, off);
         line1[off] = ' ';
         line1[off + 1] = '>';
         line1[off + 2] = ' ';
@@ -299,10 +295,9 @@ int execute_line(char *line_)
     }
     else
     {
-        strcpy(line1, line0);
+        strcpy(line1, lineline);
     }
 
-    // handle varied spacing before and after the '&' signs.
     char l[MAX_LINE];
     memset(l, 0, MAX_LINE);
     strcpy(l, line1);
@@ -482,7 +477,7 @@ int execute_line(char *line_)
             exit(1);
         }
     }
-    for (int j = 0; j < num_groups; j++)
+    for (int j = num_groups - 1; j >= 0; j--)
     {
         free(groups[j]);
     }

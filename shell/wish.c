@@ -169,11 +169,16 @@ int execute_group(char **group, int *pids, int *index)
         free_path();
         for (int i = 0; i < num_args; i++)
         {
-            if (append_path(args[i + 1]) == -1)
+            if (num_path > MAX_PATHS)
             {
                 log_error();
                 return 0;
             }
+            path[num_path] = malloc(strlen(args[i + 1]) + 1);
+            memset(path[num_path], 0, strlen(args[i + 1]) + 1); // redundant.
+            strcpy(path[num_path], args[i + 1]);
+            num_path++;
+
         }
         return 0;
     }
@@ -491,32 +496,6 @@ int execute_line(char *line_)
     free(pids);
 
     return 0;
-}
-
-int append_path(const char *new_path)
-{
-    if (num_path > MAX_PATHS)
-    {
-        return -1;
-    }
-    path[num_path] = malloc(strlen(new_path) + 1);
-    memset(path[num_path], 0, strlen(new_path) + 1); // redundant.
-    strcpy(path[num_path], new_path);
-    num_path++;
-    return 0;
-}
-
-void free_path()
-{
-    for (int i = 0; i < MAX_PATHS; i++)
-    {
-        if (path[i] != NULL)
-        {
-            free(path[i]);
-            path[i] = NULL;
-        }
-    }
-    num_path = 0;
 }
 
 void log_error() { fprintf(stderr, "An error has occurred\n") }

@@ -54,27 +54,27 @@ void free_path()
 
 int execute_group(char **group, int *pids, int *index)
 {
-    int redir_op_index = -1;
-    int num_redir_ops = 0;
-    int num_redir_files = 0;
+    int redirect = -1;
+    int num_redirect_ops = 0;
+    int num_redirect = 0;
 
     int i = 0;
     for (; group[i] != NULL; i++)
     {
-        if (num_redir_ops > 0)
+        if (num_redirect_ops > 0)
         {
-            num_redir_files++;
+            num_redirect++;
         }
 
         if (!strcmp(group[i], ">"))
         {
-            redir_op_index = i;
-            num_redir_ops++;
+            redirect = i;
+            num_redirect_ops++;
         }
     }
 
-    if (num_redir_ops > 1 || num_redir_files > 1 ||
-        (num_redir_ops >= 1 && num_redir_files == 0))
+    if (num_redirect_ops > 1 || num_redirect > 1 ||
+        (num_redirect_ops >= 1 && num_redirect == 0))
     {
         complain();
         return 0;
@@ -85,7 +85,7 @@ int execute_group(char **group, int *pids, int *index)
     char *redir_file = NULL;
 
     int fd = -1;
-    if (redir_op_index == -1)
+    if (redirect == -1)
     {
         for (int j = 1; j < i; j++)
         {
@@ -96,13 +96,13 @@ int execute_group(char **group, int *pids, int *index)
     }
     else
     {
-        for (int j = 1; j < redir_op_index; j++)
+        for (int j = 1; j < redirect; j++)
         {
             args[j] = group[j];
             num_args++;
         }
-        args[redir_op_index] = NULL;
-        redir_file = group[redir_op_index + 1];
+        args[redirect] = NULL;
+        redir_file = group[redirect + 1];
 
         if (access(redir_file, F_OK) != -1)
         {
@@ -153,8 +153,7 @@ int execute_group(char **group, int *pids, int *index)
         return 1;
     }
 
-    // change directory.
-    if (!strcmp(cmd, "cd"))
+    else if (!strcmp(cmd, "cd"))
     {
         if (num_args == 0 || num_args > 1)
         {
@@ -169,7 +168,7 @@ int execute_group(char **group, int *pids, int *index)
         return 0;
     }
 
-    if (!strcmp(cmd, "path"))
+    else if (!strcmp(cmd, "path"))
     {
         free_path();
         for (int i = 0; i < num_args; i++)
@@ -180,7 +179,7 @@ int execute_group(char **group, int *pids, int *index)
                 return 0;
             }
             path[num_path] = malloc(strlen(args[i + 1]) + 1);
-            memset(path[num_path], 0, strlen(args[i + 1]) + 1); // redundant.
+            memset(path[num_path], 0, strlen(args[i + 1]) + 1);
             strcpy(path[num_path], args[i + 1]);
             num_path++;
         }
@@ -191,11 +190,9 @@ int execute_group(char **group, int *pids, int *index)
     if (access(cmd, X_OK) == -1)
     {
         not_cwd = 1;
-        // if cmd is not in the current directory, search paths.
         int good = 0;
         for (int i = 0; i < num_path; i++)
         {
-            // count on the null terminate char and the link '/'.
             char *cmd0 = malloc(strlen(path[i]) + strlen(cmd) + 2);
             strcpy(cmd0, path[i]);
             cmd0[strlen(path[i])] = '/';
@@ -226,7 +223,7 @@ int execute_group(char **group, int *pids, int *index)
     int pid;
     if ((pid = fork()) == 0)
     {
-        if (redir_op_index != -1)
+        if (redirect != -1)
         {
             if (dup2(fd, STDOUT_FILENO) == -1)
             {
@@ -321,7 +318,6 @@ int execute_line(char *line_)
 
         if (bad_spacing)
         {
-            // the offset between the start address of line1 and the '>' sign.
             char line2[MAX_LINE];
             memset(line2, 0, MAX_LINE);
             const int off = p - ll;
@@ -377,8 +373,6 @@ int execute_line(char *line_)
         return 0;
     }
 
-    // sliding window to find all groups. Each group consists the cmd and its
-    // args.
     int num_groups = 0;
     int begin = 0;
     int end = 0;
@@ -392,7 +386,6 @@ int execute_line(char *line_)
         {
             break;
         }
-        // tokens[begin] = cmd.
 
         end = begin;
         while (end < num_tokens && strcmp(tokens[end], "&"))
@@ -404,7 +397,6 @@ int execute_line(char *line_)
         begin = end;
     }
 
-    // no cmds.
     if (num_groups == 0)
     {
         return 0;
@@ -444,47 +436,48 @@ int execute_line(char *line_)
         begin = end;
     }
 
-    // execute in parallel.
+    // make parallel
     int *pids = malloc(num_groups * sizeof(int));
     memset(pids, 0, num_groups);
     int num_forks = 0;
 
-    // fork all child processes in each group
     for (int i = num_groups - 1; i >= 0; i--)
     {
-        if (execute_group(groups[i], pids, &num_forks))
+        execute_group(groups[i], pids, &num_forks)
+        // if (execute_group(groups[i], pids, &num_forks))
+        // {
+        //     for (int j = 0; j < num_groups; j++)
+        //     {
+        //         free(groups[j]);
+        //     }
+        //     free(groups);
+        //     free(pids);
+        //     return 1;
+        // }
+    }
+
+    for (int i = num_groups - 1; i >= 0; i--)
+    {
+        if (waitpid(pids[i], NULL, 0) == -1)
         {
+            complain();
             for (int j = 0; j < num_groups; j++)
             {
                 free(groups[j]);
             }
             free(groups);
             free(pids);
-            return 1;
+            free_path();
+            exit(1);
         }
     }
-
-    // check if child processes have finished
-    int remaining = num_groups;
-    while (remaining > 0)
-    {
-        for (int i = 0; i < num_groups; i++)
-        {
-            if (pids[i] > 0 && waitpid(pids[i], NULL, WNOHANG) != 0)
-            {
-                pids[i] = 0;
-                remaining--;
-            }
-        }
-    }
-
-    // free memory and return
     for (int j = 0; j < num_groups; j++)
     {
         free(groups[j]);
     }
     free(groups);
     free(pids);
+
     return 0;
 }
 

@@ -150,13 +150,19 @@ int main(int argc, char *argv[])
             }
         }
 
+        // break into seperate commands
+
         // tokenization
 
         while (*input == '\t' || *input == ' ' || *input == '\n')
         {
-
             input++;
         }
+
+        char *cmds[MAX_INPUT];
+        int num_cmds = 0;
+
+        char *cmd = strtok(input, "&");
 
         // fprintf(stderr, "getting line\n");
         char *args[MAX_INPUT];
@@ -166,8 +172,7 @@ int main(int argc, char *argv[])
 
         if (token == NULL)
         {
-            // continue;
-            // fprintf(stderr, "null token\n");
+            continue;
         }
 
         while (token != NULL && num_args < MAX_INPUT)
@@ -190,7 +195,6 @@ int main(int argc, char *argv[])
             token = strtok(NULL, " \n");
         }
 
-        // fprintf(stderr, "num args %d\n", num_args);
         args[num_args] = NULL; // Set last argument to NULL
 
         // for (int i = 0; i < num_args; i++)
@@ -198,11 +202,8 @@ int main(int argc, char *argv[])
         //     printf(" args here %d, %s\n", i, args[i]);
         // }
 
-        if (args[0] == NULL)
-        {
-            // fprintf(stderr, "not exiting\n");
-        }
-        else if (strcmp(args[0], "exit") == 0)
+        // crazy if else begins
+        if (strcmp(args[0], "exit") == 0)
         {
 
             if (num_args == 1) // check for no extra args

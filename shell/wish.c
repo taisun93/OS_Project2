@@ -15,8 +15,10 @@
 #define MAX_TOKENS 100
 #define MAX_PATHS 128
 
+// forward declarations.
 void Write(int, const void *, size_t);
 
+// global constants.
 const char default_path[] = "/bin";
 
 // global mutables.
@@ -390,7 +392,7 @@ int execute_line(char *line_)
         {
             break;
         }
-
+        // tokens[begin] = cmd.
 
         end = begin;
         while (end < num_tokens && strcmp(tokens[end], "&"))
@@ -402,6 +404,7 @@ int execute_line(char *line_)
         begin = end;
     }
 
+    // no cmds.
     if (num_groups == 0)
     {
         return 0;
@@ -421,6 +424,7 @@ int execute_line(char *line_)
         {
             break;
         }
+        // tokens[begin] = cmd.
 
         end = begin;
         while (end < num_tokens && strcmp(tokens[end], "&"))
@@ -497,8 +501,10 @@ void interactive()
     {
         fprintf(stdout, "wish> ");
 
+        // read user input.
         if (getline(&line, &len, stdin) == -1)
         {
+            // error or eof.
             break;
         }
 

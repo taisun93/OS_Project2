@@ -443,7 +443,7 @@ int execute_line(char *line_)
 
     for (int i = num_groups - 1; i >= 0; i--)
     {
-        execute_group(groups[i], pids, &num_forks)
+        execute_group(groups[i], pids, &num_forks);
         // if (execute_group(groups[i], pids, &num_forks))
         // {
         //     for (int j = 0; j < num_groups; j++)

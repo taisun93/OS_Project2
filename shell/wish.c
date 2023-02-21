@@ -326,10 +326,15 @@ int main(int argc, char *argv[])
                 }
             }
 
+            if (strcmp(args[0], "&") == 0)
+            {
+                continue;
+            }
+
             // Run commands in parallel
-            
+
             int current_command = 0;
-            for(int j = 0; j <= i; j++)
+            for (int j = 0; j <= i; j++)
             {
                 if (new_args[j] == NULL || strcmp(new_args[j], "&") == 0)
                 {

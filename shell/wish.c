@@ -172,7 +172,6 @@ int main(int argc, char *argv[])
 
         while (token != NULL && num_args < MAX_INPUT)
         {
-            // Skip whitespace tokens
 
             if (strcmp(token, ">") != 0 && strstr(token, ">") != NULL)
             {
@@ -183,7 +182,8 @@ int main(int argc, char *argv[])
                 args[num_args++] = ">";
                 args[num_args++] = arg2;
             }
-            if (strcmp(token, "&") != 0 && strstr(token, ">") != NULL)
+            //for the test case where this shit is sandwiched together
+            if (strcmp(token, "&") != 0 && strstr(token, "&") != NULL)
             {
                 char *arg1, *arg2;
                 arg1 = strsep(&token, "&");

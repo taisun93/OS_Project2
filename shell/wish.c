@@ -27,13 +27,6 @@ void complain()
     fprintf(stderr, "An error has occurred\n");
 }
 
-void init_path()
-{
-    path[0] = malloc(strlen(default_path) + 1);
-    strcpy(path[0], default_path);
-    num_path++;
-}
-
 void free_path()
 {
     for (int i = 0; i < MAX_PATHS; i++)
@@ -174,7 +167,7 @@ int execute_group(char **group, int *pids, int *index)
                 return 0;
             }
             path[num_path] = malloc(strlen(args[i + 1]) + 1);
-            memset(path[num_path], 0, strlen(args[i + 1]) + 1); 
+            memset(path[num_path], 0, strlen(args[i + 1]) + 1);
             strcpy(path[num_path], args[i + 1]);
             num_path++;
         }
@@ -478,7 +471,6 @@ int execute_line(char *line_)
     return 0;
 }
 
-
 void interactive()
 {
     for (;;)
@@ -550,7 +542,9 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    init_path();
+    path[0] = malloc(strlen(default_path) + 1);
+    strcpy(path[0], default_path);
+    num_path++;
 
     if (argc == 1)
     {

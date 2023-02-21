@@ -15,13 +15,8 @@
 #define MAX_TOKENS 100
 #define MAX_PATHS 128
 
-// forward declarations.
-void Write(int, const void *, size_t);
-
-// global constants.
 const char default_path[] = "/bin";
 
-// global mutables.
 char *path[MAX_PATHS];
 int num_path;
 char *line;
@@ -153,7 +148,6 @@ int execute_group(char **group, int *pids, int *index)
         return 1;
     }
 
-    // change directory.
     if (!strcmp(cmd, "cd"))
     {
         if (num_args == 0 || num_args > 1)
@@ -180,7 +174,7 @@ int execute_group(char **group, int *pids, int *index)
                 return 0;
             }
             path[num_path] = malloc(strlen(args[i + 1]) + 1);
-            memset(path[num_path], 0, strlen(args[i + 1]) + 1); // redundant.
+            memset(path[num_path], 0, strlen(args[i + 1]) + 1); 
             strcpy(path[num_path], args[i + 1]);
             num_path++;
         }
@@ -191,11 +185,9 @@ int execute_group(char **group, int *pids, int *index)
     if (access(cmd, X_OK) == -1)
     {
         not_cwd = 1;
-        // if cmd is not in the current directory, search paths.
         int good = 0;
         for (int i = 0; i < num_path; i++)
         {
-            // count on the null terminate char and the link '/'.
             char *cmd0 = malloc(strlen(path[i]) + strlen(cmd) + 2);
             strcpy(cmd0, path[i]);
             cmd0[strlen(path[i])] = '/';
@@ -259,7 +251,6 @@ int execute_line(char *line_)
     char line0[MAX_LINE];
     memset(line0, 0, MAX_LINE);
 
-    // preprocess line_ to erase '\t' chars.
     char *p = line_;
     char *lp = line0;
     while (*p != '\n')
@@ -282,14 +273,11 @@ int execute_line(char *line_)
         // empty line.
         return 0;
     }
-
-    // preprocess line_ to handle varied spacing before and after the '>' sign.
     char line1[MAX_LINE];
     memset(line1, 0, MAX_LINE);
     p = strchr(line0, '>');
     if (p != NULL)
     {
-        // the offset between the start address of line_ and the '>' sign.
         const int off = p - line0;
         strncpy(line1, line0, off);
         line1[off] = ' ';
@@ -302,7 +290,6 @@ int execute_line(char *line_)
         strcpy(line1, line0);
     }
 
-    // handle varied spacing before and after the '&' signs.
     char l[MAX_LINE];
     memset(l, 0, MAX_LINE);
     strcpy(l, line1);
@@ -314,19 +301,18 @@ int execute_line(char *line_)
         {
             break;
         }
-        int bad_spacing = 0;
+        int spaced = 0;
         if (p > ll && *(p - 1) != ' ')
         {
-            bad_spacing = 1;
+            spaced = 1;
         }
         if (p < ll + strlen(ll) - 2 && *(p + 1) != ' ')
         {
-            bad_spacing = 1;
+            spaced = 1;
         }
 
-        if (bad_spacing)
+        if (spaced)
         {
-            // the offset between the start address of line1 and the '>' sign.
             char line2[MAX_LINE];
             memset(line2, 0, MAX_LINE);
             const int off = p - ll;
@@ -382,8 +368,6 @@ int execute_line(char *line_)
         return 0;
     }
 
-    // sliding window to find all groups. Each group consists the cmd and its
-    // args.
     int num_groups = 0;
     int begin = 0;
     int end = 0;
@@ -397,7 +381,6 @@ int execute_line(char *line_)
         {
             break;
         }
-        // tokens[begin] = cmd.
 
         end = begin;
         while (end < num_tokens && strcmp(tokens[end], "&"))
@@ -409,7 +392,6 @@ int execute_line(char *line_)
         begin = end;
     }
 
-    // no cmds.
     if (num_groups == 0)
     {
         return 0;
@@ -429,7 +411,6 @@ int execute_line(char *line_)
         {
             break;
         }
-        // tokens[begin] = cmd.
 
         end = begin;
         while (end < num_tokens && strcmp(tokens[end], "&"))
@@ -449,7 +430,7 @@ int execute_line(char *line_)
         begin = end;
     }
 
-    // execute each group in parallel.
+    // parallel.
     int *pids = malloc(num_groups * sizeof(int));
     memset(pids, 0, num_groups);
     int num_forks = 0;
@@ -497,13 +478,6 @@ int execute_line(char *line_)
     return 0;
 }
 
-void Write(int fd, const void *buf, size_t n)
-{
-    if (write(fd, buf, n) == -1)
-    {
-        complain();
-    }
-}
 
 void interactive()
 {

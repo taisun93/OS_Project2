@@ -34,6 +34,19 @@ void init_path()
     num_path++;
 }
 
+void free_path()
+{
+    for (int i = 0; i < MAX_PATHS; i++)
+    {
+        if (path[i] != NULL)
+        {
+            free(path[i]);
+            path[i] = NULL;
+        }
+    }
+    num_path = 0;
+}
+
 int execute_group(char **group, int *pids, int *index)
 {
     int redir_op_index = -1;
@@ -63,7 +76,7 @@ int execute_group(char **group, int *pids, int *index)
     }
 
     char *args[MAX_TOKENS];
-    int num_args = 0; 
+    int num_args = 0;
     char *redir_file = NULL;
 
     int fd = -1;
@@ -83,7 +96,7 @@ int execute_group(char **group, int *pids, int *index)
             args[j] = group[j];
             num_args++;
         }
-        args[redir_op_index] = NULL; 
+        args[redir_op_index] = NULL;
         redir_file = group[redir_op_index + 1];
 
         if (access(redir_file, F_OK) != -1)
@@ -236,7 +249,6 @@ int execute_group(char **group, int *pids, int *index)
 
     return 0;
 }
-
 
 int execute_line(char *line_)
 {
@@ -517,7 +529,6 @@ void Write(int fd, const void *buf, size_t n)
     }
 }
 
-
 void interactive()
 {
     for (;;)
@@ -575,8 +586,6 @@ void batch(const char *batch_file)
         }
     }
 }
-
-
 
 int main(int argc, char **argv)
 {

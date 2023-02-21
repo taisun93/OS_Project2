@@ -449,11 +449,11 @@ int execute_line(char *line_)
         begin = end;
     }
 
-    // execute each group in parallel.
+    // execute in parallel.
     int *pids = malloc(num_groups * sizeof(int));
     memset(pids, 0, num_groups);
     int num_forks = 0;
-    for (int i = 0; i < num_groups; i++)
+    for (int i = num_groups - 1; i >= 0; i--)
     {
         if (execute_group(groups[i], pids, &num_forks))
         {
@@ -467,8 +467,7 @@ int execute_line(char *line_)
         }
     }
 
-    // parent waits to reap all children.
-    for (int i = 0; i < num_forks; i++)
+    for (int i = num_groups - 1; i >= 0; i--)
     {
         if (waitpid(pids[i], NULL, 0) == -1)
         {
@@ -479,10 +478,6 @@ int execute_line(char *line_)
             }
             free(groups);
             free(pids);
-            // if (line != NULL)
-            // {
-            //     free(line);
-            // }
             free_path();
             exit(1);
         }

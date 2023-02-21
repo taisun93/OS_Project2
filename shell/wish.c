@@ -448,6 +448,8 @@ int execute_line(char *line_)
     int *pids = malloc(num_groups * sizeof(int));
     memset(pids, 0, num_groups);
     int num_forks = 0;
+
+    // fork all child processes in each group
     for (int i = num_groups - 1; i >= 0; i--)
     {
         if (execute_group(groups[i], pids, &num_forks))
@@ -462,28 +464,27 @@ int execute_line(char *line_)
         }
     }
 
-    for (int i = num_groups - 1; i >= 0; i--)
+    // check if child processes have finished
+    int remaining = num_groups;
+    while (remaining > 0)
     {
-        if (waitpid(pids[i], NULL, 0) == -1)
+        for (int i = 0; i < num_groups; i++)
         {
-            complain();
-            for (int j = 0; j < num_groups; j++)
+            if (pids[i] > 0 && waitpid(pids[i], NULL, WNOHANG) != 0)
             {
-                free(groups[j]);
+                pids[i] = 0;
+                remaining--;
             }
-            free(groups);
-            free(pids);
-            free_path();
-            exit(1);
         }
     }
-    for (int j = num_groups - 1; j >= 0; j--)
+
+    // free memory and return
+    for (int j = 0; j < num_groups; j++)
     {
         free(groups[j]);
     }
     free(groups);
     free(pids);
-
     return 0;
 }
 

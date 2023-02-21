@@ -27,6 +27,11 @@ int num_path;
 char *line;
 size_t len;
 
+void complain()
+{
+    fprintf(stderr, "An error has occurred\n");
+}
+
 void init_path()
 {
     path[0] = malloc(strlen(default_path) + 1);
@@ -490,11 +495,6 @@ int execute_line(char *line_)
     free(pids);
 
     return 0;
-}
-
-void complain()
-{
-    fprintf(stderr, "An error has occurred\n");
 }
 
 void Write(int fd, const void *buf, size_t n)

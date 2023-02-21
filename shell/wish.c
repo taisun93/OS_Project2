@@ -344,7 +344,7 @@ int main(int argc, char *argv[])
         //     printf(" args here %d, %s\n", i, args[i]);
         // }
 
-        execute_command(args, num_args, interactive)
+        execute_command(args, num_args, interactive);
     }
 
     free(input);

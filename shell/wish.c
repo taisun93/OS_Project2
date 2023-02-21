@@ -1,289 +1,378 @@
-#include<stdio.h>
-#include<string.h>
-#include<stdlib.h>
-#include<unistd.h>
-#include<sys/wait.h>
-#include<fcntl.h>
-#include<ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <ctype.h>
 
-int BSIZE= 512;
-char ERROR_MESSAGE[128] = "An error has occurred\n";
-int batch=0;
-int pathChanged=0;
-char *path;
-int CLOSED=0;
-int pathEmpty=0;
-char multiPath[512][512];
-int numberMultiPath=0;
+#define MAX_INPUT 512
+#define MAX_ARGS 900
 
+int cd(char *args[])
+{
+    if (args[1] == NULL)
+    {
+        // No arguments specified, print error message
+        fprintf(stderr, "An error has occurred\n");
+        return 1;
+    }
+    else if (args[2] != NULL)
+    {
+        // Too many arguments specified, print error message
+        fprintf(stderr, "An error has occurred\n");
+        return 1;
+    }
+    else
+    {
+        // Change working directory
+        if (chdir(args[1]) != 0)
+        {
+            fprintf(stderr, "cd: %s: No such file or directory\n", args[1]);
+            return 1;
+        }
 
-int checkOnlySpace(char* buffer){
-        int flag=0;
-        for(int i=0;i<strlen(buffer);i++){
-                if(isspace(buffer[i])==0){
-                        flag=1;
-                        break;
-                }
-        }        
-        return flag;
-}       
-
-
-void printError(){
-        write(STDERR_FILENO, ERROR_MESSAGE, strlen(ERROR_MESSAGE));
-        exit(1);
-        
+        return 0;
+    }
 }
 
+int path(char *args[])
+{
+    if (args[1] == NULL)
+    {
+        // No arguments specified, wipe path
+        if (setenv("PATH", "", 1) == -1)
+        {
+            perror("setenv");
+            return 1;
+        }
+    }
 
-void printPrompt(){
-        write(STDOUT_FILENO, "wish> ", strlen("wish> "));                
+    else
+    {
+        // Build new path string
+        char *path_env = getenv("PATH");
+        char new_path[strlen(path_env) + 1];
+        strcpy(new_path, path_env);
+        int i = 1;
+        while (args[i] != NULL)
+        {
+            strcat(new_path, ":");
+            strcat(new_path, args[i]);
+            i++;
+        }
+
+        // Set new path
+        if (setenv("PATH", new_path, 1) == -1)
+        {
+            perror("setenv");
+            return 1;
+        }
+        else
+        {
+            // Echo the new path
+            // fprintf(stdout, "New PATH=%s\n", new_path);
+        }
+    }
+    return 0;
 }
 
-int newProcess(char *myargs[]) {
-        int rc=fork();
-        if(rc<0){ //Fork Error
-                printError();
-                exit(1); 
-        }
-        else if(rc==0 && pathEmpty!=1){ //Child process
-                if(pathChanged==0){
-                        path=strdup("/bin/");
-                        path=strcat(path,myargs[0]);
-                        if(access(path,X_OK)!=0 && pathChanged==0){//successfully accessed binary or not?
-                                path=strdup("/usr/bin/");
-                                path=strcat(path,myargs[0]);
-                                if(access(path,X_OK)!=0){
-                                        write(STDERR_FILENO, ERROR_MESSAGE, strlen(ERROR_MESSAGE));
-                                        exit(0);
-                                }
-                        }             
-                  }
-                  else if(pathChanged==1 && numberMultiPath==0){
-                         path=strcat(path,myargs[0]);
-                        if(access(path,X_OK)!=0){
-                                        write(STDERR_FILENO, ERROR_MESSAGE, strlen(ERROR_MESSAGE));
-                                        exit(0);
-                                }
-                  }
-                  else{
-                        for(int x=0;x<numberMultiPath;x++){
-                                strcat(multiPath[x],myargs[0]);
-                                 if(access(multiPath[x],X_OK)==0){
-                                        strcpy(path,multiPath[x]);
-                                        break;
-                                }
-                        }
-                        
-                  }
-                  if(execv(path,myargs)==-1){//successfuly executed binary or not? 
-                                printError();
-                                exit(0);
-                  }
-                  
-        }
+char *strtrim(char *str)
+{
+    char *end;
 
-        return rc;
+    // Trim leading spaces
+    while (isspace((unsigned char)*str))
+        str++;
+
+    if (*str == 0) // All spaces?
+        return str;
+
+    // Trim trailing spaces
+    end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char)*end))
+        end--;
+
+    // Write new null terminator character
+    end[1] = '\0';
+
+    return str;
 }
 
+int main(int argc, char *argv[])
+{
 
+    int interactive = (argc == 1) ? 1 : 0;
+    FILE *input_file = NULL;
+    setenv("PATH", "/bin", 1);
 
-int preProcess(char *buffer){
-        int stdout_copy=0;
-        int rc;
-        if(strstr(buffer,">")!=NULL){ //REDIRECT
-                        int a=0;
-                        
-                        char* multiRedirect[sizeof(char)*512];
-                        multiRedirect[0]= strtok(strdup(buffer)," \n\t>");
-                        while(multiRedirect[a]!=NULL){
-                                a++;
-                                multiRedirect[a]=strtok(NULL," \n\t>");
-                        }
-                        if(a==1){ //no output file
-                            write(STDERR_FILENO, ERROR_MESSAGE, strlen(ERROR_MESSAGE)); 
-                            exit(0);    
-                        }
-                        int i=0;
-                        char* myargs[sizeof(buffer)];
-                        myargs[0]= strtok(buffer,"\n\t>");
-                        while(myargs[i]!=NULL){
-                                i++;
-                                myargs[i]=strtok(NULL," \n\t>"); 
-                        }
-                        if(i>2){ //no output file
-                            write(STDERR_FILENO, ERROR_MESSAGE, strlen(ERROR_MESSAGE)); 
-                            exit(0);    
-                        }
-                        int x=0;
-                        char* tokenize[sizeof(myargs[1])];
-                        tokenize[0]= strtok(myargs[1]," \n\t");
-                        while(tokenize[x]!=NULL){
-                                x++;
-                                tokenize[x]=strtok(NULL," \n\t"); 
-                        }
-                        
-                        char *fout=strdup(tokenize[0]);
-                        stdout_copy=dup(1);
-                        int out=open(fout,O_WRONLY|O_CREAT|O_TRUNC,0666);
-                        int error=open(fout,O_WRONLY|O_CREAT|O_TRUNC,0666);
-                        fflush(stdout);
-                        dup2(out,STDOUT_FILENO);
-                        dup2(out,STDERR_FILENO);
-                        close(out);
-                        CLOSED=1;
-                        if(out==-1 || error==-1 || x>1 || i>2){
-                                write(STDERR_FILENO, ERROR_MESSAGE, strlen(ERROR_MESSAGE));
-                                exit(0);
-                        }
-                        myargs[i+1]=NULL;
-                        tokenize[x+1]=NULL;
-                        strcpy(buffer,myargs[0]);
-                        
-                        
-                }
-                
-                if(buffer[0] != '\0' && buffer[0] != '\n') {
-                        char *command[sizeof(buffer)];
-                        command[0] = strtok(buffer, " \t\n");
-                        int p=0;
-                        while(command[p]!=NULL){
-                                p++;
-                                command[p]=strtok(NULL, " \n\t");
-                                
-                        }
-                        command[p+1]=NULL;
-		        if(strcmp(command[0],"cd") == 0){//cd
-                                if(p==2){
-                                        if(chdir(command[1])!=0){
-                                                write(STDERR_FILENO, ERROR_MESSAGE, strlen(ERROR_MESSAGE));
-                                               
-                                        }
-                                 }
-                                 else{ //0 Arguments or more than 2 arguments?
-                                        write(STDERR_FILENO, ERROR_MESSAGE, strlen(ERROR_MESSAGE));
-                                        
-                                 }
-                                                        
-                        }  
-                        else if(strcmp(command[0],"path") == 0){
-                                pathChanged=1;
-                                if(p==2){
-                                        pathEmpty=0;
-                                        path=strdup(command[1]);
-                                         if(path[strlen(path)-1]!='/'){
-                                                strcat(path,"/");
-                                        }      
-                                }
-                                else if(p==1){
-                                       
-                                        pathEmpty=1;
-                                }
-                                else{ 
-                                        pathEmpty=0;
-                                        for(int i=1;i<p;i++){
-                                                char *temp=strdup(command[i]);
-                                                if(temp[strlen(temp)-1]!='/')
-                                                        strcat(temp,"/");
-                                                strcpy(multiPath[i-1],temp);
-                                                numberMultiPath++;
-                                        }
-                                        
-                                        //printf("%d\n",numberMultiPath);
-                                        //for(int i=0;i<numberMultiPath;i++)
-                                                //printf("%s\n",multiPath[i]);
-                        
-                                }
-                                
-                                       
-			}
-                        else if(strcmp(command[0],"exit") == 0) {
-			    if(p==1){
-                                        exit(0);
-                                }
-                                else{ //0 Arguments or more than 2 arguments?
-                                        write(STDERR_FILENO, ERROR_MESSAGE, strlen(ERROR_MESSAGE));
-                                        
-                                }
-                        }    
-                        else{
-                                if(pathEmpty==1)
-                                        write(STDERR_FILENO, ERROR_MESSAGE, strlen(ERROR_MESSAGE));
-                                else
-                                        rc=newProcess(command);
-                        }
+    if (!interactive)
+    {
+        if (argc != 2)
+        {
+            fprintf(stderr, "An error has occurred\n");
+            exit(EXIT_FAILURE);
+        }
 
+        input_file = fopen(argv[1], "r");
+        if (input_file == NULL)
+        {
+            fprintf(stderr, "An error has occurred\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    // char *path[100] = {"/bin", "/usr/bin", NULL};
+
+    char *input = NULL;
+    size_t input_len = 0;
+
+    while (1)
+    {
+        // Gets next command
+        if (interactive)
+        {
+            printf("wish> ");
+            fflush(stdout);
+            if (getline(&input, &input_len, stdin) == -1)
+            {
+                break;
+            }
+        }
+        else
+        {
+            // fprintf(stderr, "reading in \n");
+            if (getline(&input, &input_len, input_file) == -1)
+            {
+                break;
+            }
+        }
+
+        // break into seperate commands
+
+        // tokenization
+
+        while (*input == '\t' || *input == ' ' || *input == '\n')
+        {
+            input++;
+        }
+
+        // fprintf(stderr, "getting line\n");
+        char *args[MAX_INPUT];
+        int num_args = 0;
+
+        char *token = strtok(input, " ");
+
+        if (token == NULL)
+        {
+            continue;
+        }
+
+        while (token != NULL && num_args < MAX_INPUT)
+        {
+
+            if (strcmp(token, ">") != 0 && strstr(token, ">") != NULL)
+            {
+                char *arg1, *arg2;
+                arg1 = strsep(&token, ">");
+                arg2 = strsep(&token, ">");
+                args[num_args++] = arg1;
+                args[num_args++] = ">";
+                args[num_args++] = arg2;
+            }
+            //for the test case where this shit is sandwiched together
+            if (strcmp(token, "&") != 0 && strstr(token, "&") != NULL)
+            {
+                char *arg1, *arg2;
+                arg1 = strsep(&token, "&");
+                arg2 = strsep(&token, "&");
+                args[num_args++] = arg1;
+                args[num_args++] = "&";
+                args[num_args++] = arg2;
+            }
+            else
+            {
+                args[num_args++] = strtrim(token);
+            }
+            token = strtok(NULL, " \n");
+        }
+
+        args[num_args] = NULL; // Set last argument to NULL
+
+        // for (int i = 0; i < num_args; i++)
+        // {
+        //     printf(" args here %d, %s\n", i, args[i]);
+        // }
+
+        // crazy if else begins, execution begins
+        if (strcmp(args[0], "exit") == 0)
+        {
+
+            if (num_args == 1) // check for no extra args
+            {
+                if (interactive)
+                {
+                    break;
                 }
-                if(CLOSED==1){
-                        dup2(stdout_copy,1);
-                        close(stdout_copy);
-                        
+                exit(0);
+            }
+            else
+            {
+                fprintf(stderr, "An error has occurred\n");
+            }
+        }
+        else if (strcmp(args[0], "cd") == 0)
+        {
+            cd(args);
+        }
+        else if (strcmp(args[0], "path") == 0)
+        {
+            path(args);
+        }
+        // execute shit
+        else
+        {
+            int redirect = 0;
+            // Child process
+            char *new_args[MAX_ARGS];
+            int i, fd;
+
+            for (i = 0; args[i] != NULL; i++)
+            {
+                // fprintf(stdout, "start start %s \n", args[i]);
+                if (strcmp(args[i], ">") == 0)
+                {
+                    if (redirect)
+                    {
+                        redirect = 2;
+                    }
+                    else
+                    {
+                        redirect = 1;
+                        if (args[i + 1] != NULL)
+                        {
+                            fd = open(args[i + 1], O_WRONLY | O_CREAT | O_TRUNC, 0666);
+                        }
+                    }
                 }
-               return rc;
+                new_args[i] = args[i];
+                // fprintf(stdout, "blah %s \n", args[i]);
+            }
+
+            // can't chain redirects
+            if (redirect > 1)
+            {
+                fprintf(stderr, "An error has occurred\n");
+                continue;
+            }
+
+            new_args[i + 1] = NULL;
+
+            char *path_env = getenv("PATH");
+            char *path = strdup(path_env);
+            char *dir = strtok(path, ":");
+            char full_path[90];
+            int saved_stdout = dup(1);
+
+            while (dir != NULL)
+            {
+                sprintf(full_path, "%s/%s", dir, args[0]);
+                if (access(full_path, X_OK) == 0)
+                {
+                    break;
+                }
+                dir = strtok(NULL, ":");
+            }
+            free(path);
+
+            // can't find command
+            if (dir == NULL)
+            {
+                fprintf(stderr, "An error has occurred\n");
+                continue;
+            }
+
+            // can't end on >
+            if (strcmp(args[i - 1], ">") == 0)
+            {
+                fprintf(stderr, "An error has occurred\n");
+                continue;
+            }
+
+            // penultimate in a redirect needs to be a >
+            if (redirect && strcmp(args[i - 2], ">") != 0)
+            {
+                fprintf(stderr, "An error has occurred\n");
+                continue;
+            }
+            // redirect here
+            if (redirect)
+            {
+                dup2(fd, STDOUT_FILENO);
+                dup2(fd, STDERR_FILENO);
+                new_args[i - 2] = NULL;
+                new_args[i - 1] = NULL;
+            }
+
+            int num_commands = 1;
+            for (int j = 0; j < i; j++)
+            {
+                if (strcmp(new_args[j], "&") == 0)
+                {
+                    new_args[j] = NULL;
+                    num_commands++;
+                }
+            }
+
+            if (strcmp(args[0], "&") == 0)
+            {
+                continue;
+            }
+
+            // Run commands in parallel
+
+            int current_command = 0;
+            for (int j = 0; j <= i; j++)
+            {
+                if (new_args[j] == NULL || strcmp(new_args[j], "&") == 0)
+                {
+                    new_args[j] = NULL;
+                    pid_t pid = fork();
+                    if (pid == 0)
+                    {
+                        if (execv(full_path, &new_args[current_command]) == -1)
+                        {
+                            fprintf(stderr, "An error has occurred\n");
+                            exit(EXIT_FAILURE);
+                        }
+                    }
+                    else if (pid < 0)
+                    {
+                        fprintf(stderr, "An error has occurred\n");
+
+                        exit(EXIT_FAILURE);
+                    }
+                    else
+                    {
+
+                        wait(NULL);
+                    }
+
+                    if (redirect)
+                    {
+                        close(fd);
+                        // dup2(saved_stdout, 1);
+                        dup2(saved_stdout, STDOUT_FILENO);
+                        dup2(saved_stdout, STDERR_FILENO);
+                    }
+                }
+            }
+        }
+    }
+
+    free(input);
+
+    return 0;
 }
-
-
-int main(int argc, char* argv[]){
-        FILE *file = NULL;
-        path=(char*) malloc(BSIZE);
-        char buffer[BSIZE];
-
-        if(argc==1){ //Not batch mode
-                file=stdin; //Store standard input to the file.
-                printPrompt();
-        }
-        
-        else if(argc==2){ //Batch mode
-                
-                char *bFile= strdup(argv[1]);
-                file = fopen(bFile, "r");
-                if (file == NULL) {
-        	        printError();
-                }
-                batch=1;
-        }
-        else{
-                printError();
-        }
-
-        while(fgets(buffer, BSIZE, file)){ //Writes from file to buffer
-                CLOSED=0;
-                if(checkOnlySpace(buffer)==0){ //Checks if the buffer is only space.
-                        continue;
-                }
-                if(strstr(buffer,"&")!=NULL){//Concurrency
-                        int j=0;
-                        char *myargs[sizeof(buffer)];
-                        myargs[0]= strtok(buffer,"\n\t&");                            
-                        while(myargs[j]!=NULL){
-                                j++;
-                                myargs[j]=strtok(NULL,"\n\t&"); // every call with NULL uses saved user_input 
-                                                   // value and returns next substring
-                                
-                        }
-                        myargs[j+1]=NULL;
-                        int pid[j];
-                        for(int i=0;i<j;i++){
-                                pid[i]=preProcess(myargs[i]);
-                                
-                        for(int x=0;x<j;i++){
-                                int returnStatus=0;
-                                waitpid(pid[x],&returnStatus,0);                        
-                                if (returnStatus == 1)      
-                                {
-                                        printError();    
-                                }
-                        
-                        }
-                      }
-                }
-                else{
-                    	preProcess(buffer);
-                }
-                if(argc == 1) {
-                        printPrompt();
-                 }
-   
-        }
-}
-        

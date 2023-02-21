@@ -327,7 +327,7 @@ int main(int argc, char *argv[])
             }
 
             // Run commands in parallel
-            pid_t pids[num_commands];
+            
             int current_command = 0;
             for(int j = 0; j <= i; j++)
             {

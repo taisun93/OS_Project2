@@ -165,6 +165,11 @@ int main(int argc, char *argv[])
 
         char *token = strtok(input, " ");
 
+        if (token == NULL)
+        {
+            continue;
+        }
+
         while (token != NULL && num_args < MAX_INPUT)
         {
             // Skip whitespace tokens
@@ -201,11 +206,7 @@ int main(int argc, char *argv[])
         //     printf(" args here %d, %s\n", i, args[i]);
         // }
 
-        // crazy if else begins
-        if (args[0] == NULL)
-        {
-            
-        }
+        // crazy if else begins, execution begins
         if (strcmp(args[0], "exit") == 0)
         {
 
@@ -315,34 +316,55 @@ int main(int argc, char *argv[])
                 new_args[i - 1] = NULL;
             }
 
-            pid_t pid = fork();
-            if (pid == 0)
+            int num_commands = 1;
+            for (int j = 0; j < i; j++)
             {
-
-                if (execv(full_path, new_args) == -1)
+                if (strcmp(new_args[j], "&") == 0)
                 {
-                    fprintf(stderr, "An error has occurred\n");
-                    exit(EXIT_FAILURE);
+                    new_args[j] = NULL;
+                    num_commands++;
                 }
             }
-            else if (pid < 0)
-            {
-                fprintf(stderr, "An error has occurred\n");
 
-                exit(EXIT_FAILURE);
-            }
-            else
+            // Run commands in parallel
+            pid_t pids[num_commands];
+            int current_command = 0;
+            for (int j = 0; j <= i; j++)
             {
+                if (new_args[j] == NULL || strcmp(new_args[j], "&") == 0)
+                {
+                    new_args[j] = NULL;
 
-                wait(NULL);
-            }
+                    pid_t pid = fork();
+                    if (pid == 0)
+                    {
 
-            if (redirect)
-            {
-                close(fd);
-                // dup2(saved_stdout, 1);
-                dup2(saved_stdout, STDOUT_FILENO);
-                dup2(saved_stdout, STDERR_FILENO);
+                        if (execv(full_path, new_args) == -1)
+                        {
+                            fprintf(stderr, "An error has occurred\n");
+                            exit(EXIT_FAILURE);
+                        }
+                    }
+                    else if (pid < 0)
+                    {
+                        fprintf(stderr, "An error has occurred\n");
+
+                        exit(EXIT_FAILURE);
+                    }
+                    else
+                    {
+
+                        wait(NULL);
+                    }
+
+                    if (redirect)
+                    {
+                        close(fd);
+                        // dup2(saved_stdout, 1);
+                        dup2(saved_stdout, STDOUT_FILENO);
+                        dup2(saved_stdout, STDERR_FILENO);
+                    }
+                }
             }
         }
     }

@@ -426,7 +426,7 @@ int execute_line(char *line_)
     // parallel.
     int *pids = malloc(num_groups * sizeof(int));
     memset(pids, 0, num_groups);
-    int num_forks = 0;
+    int num_forks = num_groups;
     for (int i = 0; i < num_groups; i++)
     {
         if (execute_group(groups[i], pids, &num_forks))

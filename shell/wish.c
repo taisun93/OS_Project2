@@ -479,10 +479,10 @@ int execute_line(char *line_)
             }
             free(groups);
             free(pids);
-            if (line != NULL)
-            {
-                free(line);
-            }
+            // if (line != NULL)
+            // {
+            //     free(line);
+            // }
             free_path();
             exit(1);
         }

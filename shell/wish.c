@@ -101,152 +101,6 @@ char *strtrim(char *str)
     return str;
 }
 
-void execute_command(char **args, int num_args, int interactive)
-{
-    if (args[0] == NULL)
-    {
-        // fprintf(stderr, "not exiting\n");
-    }
-    else if (strcmp(args[0], "exit") == 0)
-    {
-        if (num_args == 1) // check for no extra args
-        {
-            if (interactive)
-            {
-                return;
-            }
-            exit(0);
-        }
-        else
-        {
-            fprintf(stderr, "An error has occurred\n");
-        }
-    }
-    else if (strcmp(args[0], "cd") == 0)
-    {
-        cd(args);
-    }
-    else if (strcmp(args[0], "path") == 0)
-    {
-        path(args);
-    }
-    // execute shit
-    else
-    {
-        int redirect = 0;
-        // Child process
-        char *new_args[MAX_ARGS];
-        int i, fd;
-
-        for (i = 0; args[i] != NULL; i++)
-        {
-            // fprintf(stdout, "start start %s \n", args[i]);
-            if (strcmp(args[i], ">") == 0)
-            {
-                if (redirect)
-                {
-                    redirect = 2;
-                }
-                else
-                {
-                    redirect = 1;
-                    if (args[i + 1] != NULL)
-                    {
-                        fd = open(args[i + 1], O_WRONLY | O_CREAT | O_TRUNC, 0666);
-                    }
-                }
-            }
-            new_args[i] = args[i];
-            // fprintf(stdout, "blah %s \n", args[i]);
-        }
-
-        // can't chain redirects
-        if (redirect > 1)
-        {
-            fprintf(stderr, "An error has occurred\n");
-            return;
-        }
-
-        new_args[i + 1] = NULL;
-
-        char *path_env = getenv("PATH");
-        char *path = strdup(path_env);
-        char *dir = strtok(path, ":");
-        char full_path[90];
-        int saved_stdout = dup(1);
-
-        while (dir != NULL)
-        {
-            sprintf(full_path, "%s/%s", dir, args[0]);
-            if (access(full_path, X_OK) == 0)
-            {
-                return;
-            }
-            dir = strtok(NULL, ":");
-        }
-        free(path);
-
-        // can't find command
-        if (dir == NULL)
-        {
-            fprintf(stderr, "An error has occurred\n");
-            return;
-        }
-
-        // can't end on >
-        if (strcmp(args[i - 1], ">") == 0)
-        {
-            fprintf(stderr, "An error has occurred\n");
-            return;
-        }
-
-        // penultimate in a redirect needs to be a >
-        if (redirect && strcmp(args[i - 2], ">") != 0)
-        {
-            fprintf(stderr, "An error has occurred\n");
-            return;
-        }
-        // redirect here
-        if (redirect)
-        {
-            dup2(fd, STDOUT_FILENO);
-            dup2(fd, STDERR_FILENO);
-            new_args[i - 2] = NULL;
-            new_args[i - 1] = NULL;
-        }
-
-        pid_t pid = fork();
-        if (pid == 0)
-        {
-
-            if (execv(full_path, new_args) == -1)
-            {
-                fprintf(stderr, "An error has occurred\n");
-                exit(EXIT_FAILURE);
-            }
-        }
-        else if (pid < 0)
-        {
-            fprintf(stderr, "An error has occurred\n");
-
-            exit(EXIT_FAILURE);
-        }
-        else
-        {
-
-            wait(NULL);
-        }
-
-        if (redirect)
-        {
-            close(fd);
-            // dup2(saved_stdout, 1);
-            dup2(saved_stdout, STDOUT_FILENO);
-            dup2(saved_stdout, STDERR_FILENO);
-        }
-    }
-}
-
 int main(int argc, char *argv[])
 {
 
@@ -344,7 +198,149 @@ int main(int argc, char *argv[])
         //     printf(" args here %d, %s\n", i, args[i]);
         // }
 
-        execute_command(args, num_args, interactive);
+        if (args[0] == NULL)
+        {
+            // fprintf(stderr, "not exiting\n");
+        }
+        else if (strcmp(args[0], "exit") == 0)
+        {
+
+            if (num_args == 1) // check for no extra args
+            {
+                if (interactive)
+                {
+                    break;
+                }
+                exit(0);
+            }
+            else
+            {
+                fprintf(stderr, "An error has occurred\n");
+            }
+        }
+        else if (strcmp(args[0], "cd") == 0)
+        {
+            cd(args);
+        }
+        else if (strcmp(args[0], "path") == 0)
+        {
+            path(args);
+        }
+        // execute shit
+        else
+        {
+            int redirect = 0;
+            // Child process
+            char *new_args[MAX_ARGS];
+            int i, fd;
+
+            for (i = 0; args[i] != NULL; i++)
+            {
+                // fprintf(stdout, "start start %s \n", args[i]);
+                if (strcmp(args[i], ">") == 0)
+                {
+                    if (redirect)
+                    {
+                        redirect = 2;
+                    }
+                    else
+                    {
+                        redirect = 1;
+                        if (args[i + 1] != NULL)
+                        {
+                            fd = open(args[i + 1], O_WRONLY | O_CREAT | O_TRUNC, 0666);
+                        }
+                    }
+                }
+                new_args[i] = args[i];
+                // fprintf(stdout, "blah %s \n", args[i]);
+            }
+
+            // can't chain redirects
+            if (redirect > 1)
+            {
+                fprintf(stderr, "An error has occurred\n");
+                continue;
+            }
+
+            new_args[i + 1] = NULL;
+
+            char *path_env = getenv("PATH");
+            char *path = strdup(path_env);
+            char *dir = strtok(path, ":");
+            char full_path[90];
+            int saved_stdout = dup(1);
+
+            while (dir != NULL)
+            {
+                sprintf(full_path, "%s/%s", dir, args[0]);
+                if (access(full_path, X_OK) == 0)
+                {
+                    break;
+                }
+                dir = strtok(NULL, ":");
+            }
+            free(path);
+
+            // can't find command
+            if (dir == NULL)
+            {
+                fprintf(stderr, "An error has occurred\n");
+                continue;
+            }
+
+            // can't end on >
+            if (strcmp(args[i - 1], ">") == 0)
+            {
+                fprintf(stderr, "An error has occurred\n");
+                continue;
+            }
+
+            // penultimate in a redirect needs to be a >
+            if (redirect && strcmp(args[i - 2], ">") != 0)
+            {
+                fprintf(stderr, "An error has occurred\n");
+                continue;
+            }
+            // redirect here
+            if (redirect)
+            {
+                dup2(fd, STDOUT_FILENO);
+                dup2(fd, STDERR_FILENO);
+                new_args[i - 2] = NULL;
+                new_args[i - 1] = NULL;
+            }
+
+            pid_t pid = fork();
+            if (pid == 0)
+            {
+
+                if (execv(full_path, new_args) == -1)
+                {
+                    fprintf(stderr, "An error has occurred\n");
+                    exit(EXIT_FAILURE);
+                }
+            }
+            else if (pid < 0)
+            {
+                fprintf(stderr, "An error has occurred\n");
+
+                exit(EXIT_FAILURE);
+            }
+            else
+            {
+
+                wait(NULL);
+            }
+
+            if (redirect)
+            {
+                close(fd);
+                // dup2(saved_stdout, 1);
+                dup2(saved_stdout, STDOUT_FILENO);
+                dup2(saved_stdout, STDERR_FILENO);
+            }
+        }
     }
 
     free(input);

@@ -164,17 +164,11 @@ int main(int argc, char *argv[])
 
         char *token = strtok(input, " ");
 
-        if (token == NULL)
-        {
-            // continue;
-            // fprintf(stderr, "null token\n");
-        }
-
         while (token != NULL && num_args < MAX_INPUT)
         {
             // Skip whitespace tokens
 
-            if (strcmp(token, ">") != 0 && strstr(token, ">") != NULL)
+            if (strcmp(strtrim(token), ">") != 0 && strstr(token, ">") != NULL)
             {
                 char *arg1, *arg2;
                 arg1 = strsep(&token, ">");
@@ -192,11 +186,6 @@ int main(int argc, char *argv[])
 
         // fprintf(stderr, "num args %d\n", num_args);
         args[num_args] = NULL; // Set last argument to NULL
-
-        // for (int i = 0; i < num_args; i++)
-        // {
-        //     printf(" args here %d, %s\n", i, args[i]);
-        // }
 
         if (args[0] == NULL)
         {
@@ -296,12 +285,19 @@ int main(int argc, char *argv[])
                 continue;
             }
 
+            // lonely and
+            if (strcmp(args[i - 1], "&") == 0)
+            {
+                continue;
+            }
+
             // penultimate in a redirect needs to be a >
             if (redirect && strcmp(args[i - 2], ">") != 0)
             {
                 fprintf(stderr, "An error has occurred\n");
                 continue;
             }
+
             // redirect here
             if (redirect)
             {

@@ -301,12 +301,9 @@ int main(int argc, char *argv[])
 
                 for (int x = 0; x < j; i++)
                 {
-                    int returnStatus = 0;
+                    
                     waitpid(pid[x], &returnStatus, 0);
-                    if (returnStatus == 1)
-                    {
-                        printError();
-                    }
+
                 }
             }
         }

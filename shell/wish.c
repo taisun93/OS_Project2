@@ -34,6 +34,249 @@ void init_path()
     num_path++;
 }
 
+int execute_line(char *line_)
+{
+    char line0[MAX_LINE];
+    memset(line0, 0, MAX_LINE);
+
+    // preprocess line_ to erase '\t' chars.
+    char *p = line_;
+    char *lp = line0;
+    while (*p != '\n')
+    {
+        if (*p != '\t')
+        {
+            *lp = *p;
+            lp++;
+        }
+        p++;
+        if (p - line_ >= MAX_LINE)
+        {
+            break;
+        }
+    }
+    *lp = '\n';
+
+    if (line0[0] == '\n')
+    {
+        // empty line.
+        return 0;
+    }
+
+    // preprocess line_ to handle varied spacing before and after the '>' sign.
+    char line1[MAX_LINE];
+    memset(line1, 0, MAX_LINE);
+    p = strchr(line0, '>');
+    if (p != NULL)
+    {
+        // the offset between the start address of line_ and the '>' sign.
+        const int off = p - line0;
+        strncpy(line1, line0, off);
+        line1[off] = ' ';
+        line1[off + 1] = '>';
+        line1[off + 2] = ' ';
+        strcpy(line1 + off + 3, p + 1);
+    }
+    else
+    {
+        strcpy(line1, line0);
+    }
+
+    // handle varied spacing before and after the '&' signs.
+    char l[MAX_LINE];
+    memset(l, 0, MAX_LINE);
+    strcpy(l, line1);
+    char *ll = l;
+    while (1)
+    {
+        p = strchr(ll, '&');
+        if (p == NULL)
+        {
+            break;
+        }
+        int bad_spacing = 0;
+        if (p > ll && *(p - 1) != ' ')
+        {
+            bad_spacing = 1;
+        }
+        if (p < ll + strlen(ll) - 2 && *(p + 1) != ' ')
+        {
+            bad_spacing = 1;
+        }
+
+        if (bad_spacing)
+        {
+            // the offset between the start address of line1 and the '>' sign.
+            char line2[MAX_LINE];
+            memset(line2, 0, MAX_LINE);
+            const int off = p - ll;
+            strncpy(line2, ll, off);
+            line2[off] = ' ';
+            line2[off + 1] = '&';
+            line2[off + 2] = ' ';
+            strcpy(line2 + off + 3, p + 1);
+            strcpy(ll, line2);
+
+            ll = ll + off + 2;
+        }
+        else
+        {
+            ll = p + 1;
+        }
+
+        if (p >= ll + strlen(ll))
+        {
+            break;
+        }
+    }
+    char line[MAX_LINE];
+    memset(line, 0, MAX_LINE);
+    strcpy(line, l);
+
+    // tokenization.
+    char *tokens[MAX_TOKENS];
+    char *token = NULL;
+    token = strtok(line, " ");
+    int i = 0;
+    for (; token != NULL; i++)
+    {
+        char *p = strchr(token, '\n');
+        if (p != NULL)
+        {
+            token[strlen(token) - 1] = '\0';
+            if (token[0] == '\0')
+            {
+                break;
+            }
+        }
+
+        tokens[i] = token;
+        token = strtok(NULL, " ");
+    }
+
+    const int num_tokens = i;
+
+    if (num_tokens == 0)
+    {
+        // empty command line.
+        return 0;
+    }
+
+    // sliding window to find all groups. Each group consists the cmd and its
+    // args.
+    int num_groups = 0;
+    int begin = 0;
+    int end = 0;
+    while (end < num_tokens)
+    {
+        while (begin < num_tokens && !strcmp(tokens[begin], "&"))
+        {
+            begin++;
+        }
+        if (begin >= num_tokens)
+        {
+            break;
+        }
+        // tokens[begin] = cmd.
+
+        end = begin;
+        while (end < num_tokens && strcmp(tokens[end], "&"))
+        {
+            end++;
+        }
+        num_groups++;
+
+        begin = end;
+    }
+
+    // no cmds.
+    if (num_groups == 0)
+    {
+        return 0;
+    }
+
+    char ***groups = malloc(num_groups * sizeof(char **));
+    int gi = 0;
+    begin = 0;
+    end = 0;
+    while (end < num_tokens)
+    {
+        while (begin < num_tokens && !strcmp(tokens[begin], "&"))
+        {
+            begin++;
+        }
+        if (begin >= num_tokens)
+        {
+            break;
+        }
+        // tokens[begin] = cmd.
+
+        end = begin;
+        while (end < num_tokens && strcmp(tokens[end], "&"))
+        {
+            end++;
+        }
+
+        const int sz = end - begin;
+        groups[gi] = malloc((sz + 1) * sizeof(char *));
+        for (int i = 0; i < sz; i++)
+        {
+            groups[gi][i] = tokens[begin + i];
+        }
+        groups[gi][sz] = NULL;
+        gi++;
+
+        begin = end;
+    }
+
+    // execute each group in parallel.
+    int *pids = malloc(num_groups * sizeof(int));
+    memset(pids, 0, num_groups);
+    int num_forks = 0;
+    for (int i = 0; i < num_groups; i++)
+    {
+        if (execute_group(groups[i], pids, &num_forks))
+        {
+            for (int j = 0; j < num_groups; j++)
+            {
+                free(groups[j]);
+            }
+            free(groups);
+            free(pids);
+            return 1;
+        }
+    }
+
+    // parent waits to reap all children.
+    for (int i = 0; i < num_forks; i++)
+    {
+        if (waitpid(pids[i], NULL, 0) == -1)
+        {
+            log_error();
+            for (int j = 0; j < num_groups; j++)
+            {
+                free(groups[j]);
+            }
+            free(groups);
+            free(pids);
+            if (line != NULL)
+            {
+                free(line);
+            }
+            free_path();
+            exit(1);
+        }
+    }
+    for (int j = 0; j < num_groups; j++)
+    {
+        free(groups[j]);
+    }
+    free(groups);
+    free(pids);
+
+    return 0;
+}
+
 int append_path(const char *new_path)
 {
     if (num_path > MAX_PATHS)
@@ -277,7 +520,7 @@ void interactive()
 {
     for (;;)
     {
-        fprintf(stdout, "wish> ")
+        fprintf(stdout, "wish> ");
 
         // read user input.
         if (getline(&line, &len, stdin) == -1)
@@ -324,256 +567,14 @@ void batch(const char *batch_file)
 
     if (!closed)
     {
-        if (fclose(stream) == -1)
+        if (fclose(f) == -1)
         {
             log_error(f);
         }
     }
 }
 
-///@return 1 if shall terminate the shell.
-int execute_line(char *line_)
-{
-    char line0[MAX_LINE];
-    memset(line0, 0, MAX_LINE);
 
-    // preprocess line_ to erase '\t' chars.
-    char *p = line_;
-    char *lp = line0;
-    while (*p != '\n')
-    {
-        if (*p != '\t')
-        {
-            *lp = *p;
-            lp++;
-        }
-        p++;
-        if (p - line_ >= MAX_LINE)
-        {
-            break;
-        }
-    }
-    *lp = '\n';
-
-    if (line0[0] == '\n')
-    {
-        // empty line.
-        return 0;
-    }
-
-    // preprocess line_ to handle varied spacing before and after the '>' sign.
-    char line1[MAX_LINE];
-    memset(line1, 0, MAX_LINE);
-    p = strchr(line0, '>');
-    if (p != NULL)
-    {
-        // the offset between the start address of line_ and the '>' sign.
-        const int off = p - line0;
-        strncpy(line1, line0, off);
-        line1[off] = ' ';
-        line1[off + 1] = '>';
-        line1[off + 2] = ' ';
-        strcpy(line1 + off + 3, p + 1);
-    }
-    else
-    {
-        strcpy(line1, line0);
-    }
-
-    // handle varied spacing before and after the '&' signs.
-    char l[MAX_LINE];
-    memset(l, 0, MAX_LINE);
-    strcpy(l, line1);
-    char *ll = l;
-    while (1)
-    {
-        p = strchr(ll, '&');
-        if (p == NULL)
-        {
-            break;
-        }
-        int bad_spacing = 0;
-        if (p > ll && *(p - 1) != ' ')
-        {
-            bad_spacing = 1;
-        }
-        if (p < ll + strlen(ll) - 2 && *(p + 1) != ' ')
-        {
-            bad_spacing = 1;
-        }
-
-        if (bad_spacing)
-        {
-            // the offset between the start address of line1 and the '>' sign.
-            char line2[MAX_LINE];
-            memset(line2, 0, MAX_LINE);
-            const int off = p - ll;
-            strncpy(line2, ll, off);
-            line2[off] = ' ';
-            line2[off + 1] = '&';
-            line2[off + 2] = ' ';
-            strcpy(line2 + off + 3, p + 1);
-            strcpy(ll, line2);
-
-            ll = ll + off + 2;
-        }
-        else
-        {
-            ll = p + 1;
-        }
-
-        if (p >= ll + strlen(ll))
-        {
-            break;
-        }
-    }
-    char line[MAX_LINE];
-    memset(line, 0, MAX_LINE);
-    strcpy(line, l);
-
-    // tokenization.
-    char *tokens[MAX_TOKENS];
-    char *token = NULL;
-    token = strtok(line, " ");
-    int i = 0;
-    for (; token != NULL; i++)
-    {
-        char *p = strchr(token, '\n');
-        if (p != NULL)
-        {
-            token[strlen(token) - 1] = '\0';
-            if (token[0] == '\0')
-            {
-                break;
-            }
-        }
-
-        tokens[i] = token;
-        token = strtok(NULL, " ");
-    }
-
-    const int num_tokens = i;
-
-    if (num_tokens == 0)
-    {
-        // empty command line.
-        return 0;
-    }
-
-    // sliding window to find all groups. Each group consists the cmd and its
-    // args.
-    int num_groups = 0;
-    int begin = 0;
-    int end = 0;
-    while (end < num_tokens)
-    {
-        while (begin < num_tokens && !strcmp(tokens[begin], "&"))
-        {
-            begin++;
-        }
-        if (begin >= num_tokens)
-        {
-            break;
-        }
-        // tokens[begin] = cmd.
-
-        end = begin;
-        while (end < num_tokens && strcmp(tokens[end], "&"))
-        {
-            end++;
-        }
-        num_groups++;
-
-        begin = end;
-    }
-
-    // no cmds.
-    if (num_groups == 0)
-    {
-        return 0;
-    }
-
-    char ***groups = malloc(num_groups * sizeof(char **));
-    int gi = 0;
-    begin = 0;
-    end = 0;
-    while (end < num_tokens)
-    {
-        while (begin < num_tokens && !strcmp(tokens[begin], "&"))
-        {
-            begin++;
-        }
-        if (begin >= num_tokens)
-        {
-            break;
-        }
-        // tokens[begin] = cmd.
-
-        end = begin;
-        while (end < num_tokens && strcmp(tokens[end], "&"))
-        {
-            end++;
-        }
-
-        const int sz = end - begin;
-        groups[gi] = malloc((sz + 1) * sizeof(char *));
-        for (int i = 0; i < sz; i++)
-        {
-            groups[gi][i] = tokens[begin + i];
-        }
-        groups[gi][sz] = NULL;
-        gi++;
-
-        begin = end;
-    }
-
-    // execute each group in parallel.
-    int *pids = malloc(num_groups * sizeof(int));
-    memset(pids, 0, num_groups);
-    int num_forks = 0;
-    for (int i = 0; i < num_groups; i++)
-    {
-        if (execute_group(groups[i], pids, &num_forks))
-        {
-            for (int j = 0; j < num_groups; j++)
-            {
-                free(groups[j]);
-            }
-            free(groups);
-            free(pids);
-            return 1;
-        }
-    }
-
-    // parent waits to reap all children.
-    for (int i = 0; i < num_forks; i++)
-    {
-        if (waitpid(pids[i], NULL, 0) == -1)
-        {
-            log_error();
-            for (int j = 0; j < num_groups; j++)
-            {
-                free(groups[j]);
-            }
-            free(groups);
-            free(pids);
-            if (line != NULL)
-            {
-                free(line);
-            }
-            free_path();
-            exit(1);
-        }
-    }
-    for (int j = 0; j < num_groups; j++)
-    {
-        free(groups[j]);
-    }
-    free(groups);
-    free(pids);
-
-    return 0;
-}
 
 int main(int argc, char **argv)
 {

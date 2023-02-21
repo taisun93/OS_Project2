@@ -10,6 +10,7 @@
 
 #define MAX_INPUT 512
 #define MAX_ARGS 900
+#define MAX_COMMANDS 900
 
 int cd(char *args[])
 {
@@ -220,7 +221,8 @@ int main(int argc, char *argv[])
         {
             int redirect = 0;
             // Child process
-            char *new_args[MAX_ARGS];
+            char new_args[MAX_COMMANDS][MAX_ARGS];
+
             int i, fd;
 
             // lonely and
@@ -247,7 +249,7 @@ int main(int argc, char *argv[])
                         }
                     }
                 }
-                new_args[i] = args[i];
+                strcpy(new_args[i], args[i]);
                 // fprintf(stdout, "blah %s \n", args[i]);
             }
 
@@ -258,7 +260,7 @@ int main(int argc, char *argv[])
                 continue;
             }
 
-            new_args[i + 1] = NULL;
+            new_args[i][0] = '\0';
 
             char *path_env = getenv("PATH");
             char *path = strdup(path_env);
@@ -303,8 +305,8 @@ int main(int argc, char *argv[])
             {
                 dup2(fd, STDOUT_FILENO);
                 dup2(fd, STDERR_FILENO);
-                new_args[i - 2] = NULL;
-                new_args[i - 1] = NULL;
+                new_args[i - 2][0] = '\0';
+                new_args[i - 1][0] = '\0';
             }
 
             pid_t pid = fork();

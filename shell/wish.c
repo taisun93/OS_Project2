@@ -165,11 +165,6 @@ int main(int argc, char *argv[])
 
         char *token = strtok(input, " ");
 
-        // if (token == NULL)
-        // {
-        //     continue;
-        // }
-
         while (token != NULL && num_args < MAX_INPUT)
         {
             // Skip whitespace tokens
@@ -207,11 +202,11 @@ int main(int argc, char *argv[])
         // }
 
         // crazy if else begins
-        if (strcmp(args[0] == NULL))
+        if (args[0] == NULL)
         {
-            // continue;
+            
         }
-        else if (strcmp(args[0], "exit") == 0)
+        if (strcmp(args[0], "exit") == 0)
         {
 
             if (num_args == 1) // check for no extra args

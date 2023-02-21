@@ -1,378 +1,610 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
+#include <string.h>
 #include <sys/wait.h>
 #include <fcntl.h>
-#include <errno.h>
-#include <sys/stat.h>
-#include <ctype.h>
 
-#define MAX_INPUT 512
-#define MAX_ARGS 900
-
-int cd(char *args[])
+int
+main(int argc, char **argv)
 {
-    if (args[1] == NULL)
+  char **path = malloc(sizeof(char *)*2);
+  path[0] = malloc(5);
+  strcpy(path[0], "/bin");
+  path[1] = NULL;
+
+  char *ptr0 = NULL, *ptr1 = NULL, *ptr2 = NULL, *ptr3 = NULL;
+  char delimit[]=" \t\r\n\v\f";
+  char *redirect = ">";
+  char *amp = "&\n";
+  char slash[] = "/";
+
+  if(argc > 1)
+  {
+    if(argc > 2)
     {
-        // No arguments specified, print error message
-        fprintf(stderr, "An error has occurred\n");
-        return 1;
+      char error_message[30] = "An error has occurred\n";
+      write(STDERR_FILENO, error_message, strlen(error_message));
+      exit(1);
     }
-    else if (args[2] != NULL)
+    FILE *fp = fopen(argv[1], "r");
+    if(fp == NULL)
     {
-        // Too many arguments specified, print error message
-        fprintf(stderr, "An error has occurred\n");
-        return 1;
+      char error_message[30] = "An error has occurred\n";
+      write(STDERR_FILENO, error_message, strlen(error_message));
+      exit(1);
     }
-    else
+    char *commandAll = NULL;
+    size_t linecap = 0;
+    ssize_t linelen;
+    while((linelen = getline(&commandAll, &linecap, fp)) != -1)
     {
-        // Change working directory
-        if (chdir(args[1]) != 0)
+      if('\n' == commandAll[0]) continue;
+      char *ampc = strtok_r(commandAll, amp, &ptr0);
+      while(ampc != NULL)
+      {
+        char *command = malloc(1+strlen(ampc));
+        strcpy(command, ampc);
+        if(strstr(command, redirect) != NULL)
         {
-            fprintf(stderr, "cd: %s: No such file or directory\n", args[1]);
-            return 1;
-        }
+          char *t = strtok_r(command, redirect, &ptr1);
+          char *commandLeft = malloc(1+strlen(t));
+          strcpy(commandLeft, t);
+          char *copy = malloc(1+strlen(commandLeft));
+          strcpy(copy, commandLeft);
 
-        return 0;
-    }
-}
-
-int path(char *args[])
-{
-    if (args[1] == NULL)
-    {
-        // No arguments specified, wipe path
-        if (setenv("PATH", "", 1) == -1)
-        {
-            perror("setenv");
-            return 1;
-        }
-    }
-
-    else
-    {
-        // Build new path string
-        char *path_env = getenv("PATH");
-        char new_path[strlen(path_env) + 1];
-        strcpy(new_path, path_env);
-        int i = 1;
-        while (args[i] != NULL)
-        {
-            strcat(new_path, ":");
-            strcat(new_path, args[i]);
-            i++;
-        }
-
-        // Set new path
-        if (setenv("PATH", new_path, 1) == -1)
-        {
-            perror("setenv");
-            return 1;
-        }
-        else
-        {
-            // Echo the new path
-            // fprintf(stdout, "New PATH=%s\n", new_path);
-        }
-    }
-    return 0;
-}
-
-char *strtrim(char *str)
-{
-    char *end;
-
-    // Trim leading spaces
-    while (isspace((unsigned char)*str))
-        str++;
-
-    if (*str == 0) // All spaces?
-        return str;
-
-    // Trim trailing spaces
-    end = str + strlen(str) - 1;
-    while (end > str && isspace((unsigned char)*end))
-        end--;
-
-    // Write new null terminator character
-    end[1] = '\0';
-
-    return str;
-}
-
-int main(int argc, char *argv[])
-{
-
-    int interactive = (argc == 1) ? 1 : 0;
-    FILE *input_file = NULL;
-    setenv("PATH", "/bin", 1);
-
-    if (!interactive)
-    {
-        if (argc != 2)
-        {
-            fprintf(stderr, "An error has occurred\n");
-            exit(EXIT_FAILURE);
-        }
-
-        input_file = fopen(argv[1], "r");
-        if (input_file == NULL)
-        {
-            fprintf(stderr, "An error has occurred\n");
-            exit(EXIT_FAILURE);
-        }
-    }
-
-    // char *path[100] = {"/bin", "/usr/bin", NULL};
-
-    char *input = NULL;
-    size_t input_len = 0;
-
-    while (1)
-    {
-        // Gets next command
-        if (interactive)
-        {
-            printf("wish> ");
-            fflush(stdout);
-            if (getline(&input, &input_len, stdin) == -1)
-            {
-                break;
-            }
-        }
-        else
-        {
-            // fprintf(stderr, "reading in \n");
-            if (getline(&input, &input_len, input_file) == -1)
-            {
-                break;
-            }
-        }
-
-        // break into seperate commands
-
-        // tokenization
-
-        while (*input == '\t' || *input == ' ' || *input == '\n')
-        {
-            input++;
-        }
-
-        // fprintf(stderr, "getting line\n");
-        char *args[MAX_INPUT];
-        int num_args = 0;
-
-        char *token = strtok(input, " ");
-
-        if (token == NULL)
-        {
+          if(strstr(ptr1, redirect) != NULL)
+          {
+            char error_message[30] = "An error has occurred\n";
+            write(STDERR_FILENO, error_message, strlen(error_message));
+            ampc = strtok_r(NULL, amp, &ptr0);
             continue;
-        }
+          }
+          t = strtok_r(NULL, strcat(delimit, redirect), &ptr1);
+          if(t == NULL)
+          {
+            char error_message[30] = "An error has occurred\n";
+            write(STDERR_FILENO, error_message, strlen(error_message));
+            ampc = strtok_r(NULL, amp, &ptr0);
+            continue;
+          }
 
-        while (token != NULL && num_args < MAX_INPUT)
-        {
+          char *output = malloc(1+strlen(t));
+          strcpy(output, t);
 
-            if (strcmp(token, ">") != 0 && strstr(token, ">") != NULL)
+          if((t = strtok_r(NULL, strcat(delimit, redirect), &ptr1)) != NULL)
+          {
+            char error_message[30] = "An error has occurred\n";
+            write(STDERR_FILENO, error_message, strlen(error_message));
+            ampc = strtok_r(NULL, amp, &ptr0);
+            continue;
+          }
+
+          int num_args = 0;
+          char *token = strtok_r(commandLeft, delimit, &ptr3);
+          if(token == NULL)
+          {
+            ampc = strtok_r(NULL, amp, &ptr0);
+            continue;
+          }
+          while((token = strtok_r(NULL, delimit, &ptr3)) != NULL)
+              num_args++;
+
+          int out = open(output, O_TRUNC|O_CREAT|O_WRONLY, 0600);
+          if (-1 == out)
+          {
+            char error_message[30] = "An error has occurred\n";
+            write(STDERR_FILENO, error_message, strlen(error_message));
+            ampc = strtok_r(NULL, amp, &ptr0);
+            continue;
+          }
+
+          int save_out = dup(fileno(stdout));
+          int save_err = dup(fileno(stderr));
+          if (-1 == dup2(out, fileno(stdout)))
+          {
+            char error_message[30] = "An error has occurred\n";
+            write(STDERR_FILENO, error_message, strlen(error_message));
+            ampc = strtok_r(NULL, amp, &ptr0);
+            continue;
+          }
+          if (-1 == dup2(out, fileno(stderr)))
+          {
+            char error_message[30] = "An error has occurred\n";
+            write(STDERR_FILENO, error_message, strlen(error_message));
+            ampc = strtok_r(NULL, amp, &ptr0);
+            continue;
+
+          }
+
+          fflush(stdout);
+          fflush(stderr);
+          close(out);
+
+          token = strtok_r(copy, delimit, &ptr2);
+          if (strcmp(token,"exit") == 0)
+          {
+            if( num_args != 0 )
             {
-                char *arg1, *arg2;
-                arg1 = strsep(&token, ">");
-                arg2 = strsep(&token, ">");
-                args[num_args++] = arg1;
-                args[num_args++] = ">";
-                args[num_args++] = arg2;
+              char error_message[30] = "An error has occurred\n";
+              write(STDERR_FILENO, error_message, strlen(error_message));
+              ampc = strtok_r(NULL, amp, &ptr0);
+              continue;
             }
-            //for the test case where this shit is sandwiched together
-            if (strcmp(token, "&") != 0 && strstr(token, "&") != NULL)
+            else
+              exit(0);
+          }
+          else if (strcmp(token,"cd") == 0)
+          {
+            if(num_args != 1)
             {
-                char *arg1, *arg2;
-                arg1 = strsep(&token, "&");
-                arg2 = strsep(&token, "&");
-                args[num_args++] = arg1;
-                args[num_args++] = "&";
-                args[num_args++] = arg2;
+              char error_message[30] = "An error has occurred\n";
+              write(STDERR_FILENO, error_message, strlen(error_message));
+              ampc = strtok_r(NULL, amp, &ptr0);
+              continue;
             }
             else
             {
-                args[num_args++] = strtrim(token);
+              token = strtok_r(NULL, delimit, &ptr2);
+              chdir(token);
             }
-            token = strtok(NULL, " \n");
-        }
-
-        args[num_args] = NULL; // Set last argument to NULL
-
-        // for (int i = 0; i < num_args; i++)
-        // {
-        //     printf(" args here %d, %s\n", i, args[i]);
-        // }
-
-        // crazy if else begins, execution begins
-        if (strcmp(args[0], "exit") == 0)
-        {
-
-            if (num_args == 1) // check for no extra args
+          }
+          else if (strcmp(token,"path") == 0)
+          {
+            path = malloc(sizeof(char *) * (num_args + 1));
+            int i = 0;
+            while((token = strtok_r(NULL, delimit, &ptr2)) != NULL)
             {
-                if (interactive)
-                {
-                    break;
-                }
-                exit(0);
+              path[i] = malloc(1+ strlen(token));
+              strcpy(path[i], token);
+              i++;
             }
-            else
+            path[i] = NULL;
+          }
+          else
+          {
+            int i = 0;
+            int done = 0;
+            while(path[i] != NULL)
             {
-                fprintf(stderr, "An error has occurred\n");
+              done = 0;
+              char *bin_path;
+              bin_path = malloc(strlen(path[i])+2+strlen(token));
+              strcpy(bin_path, path[i]);
+              strcat(bin_path, slash);
+              strcat(bin_path, token);
+              if(access(bin_path, X_OK) == 0)
+                done = 1;
+              else
+              {
+                i++;
+                continue;
+              }
+
+              int status;
+              char *args[num_args+2];
+              args[0] = malloc(1+strlen(token));
+              strcpy(args[0], token);
+              int j = 1;
+              while((token = strtok_r(NULL, delimit, &ptr2)) != NULL)
+              {
+                args[j] = malloc(1+strlen(token));
+                strcpy(args[j], token);
+                j++;
+              }
+              args[j] = NULL;
+              if(fork() == 0)
+              {
+                execv(bin_path, args);
+                char error_message[30] = "An error has occurred\n";
+                write(STDERR_FILENO, error_message, strlen(error_message));
+              }
+              else
+                wait(&status);
+              dup2(save_out, fileno(stdout));
+              dup2(save_err, fileno(stderr));
+
+              close(save_out);
+              close(save_err);
+              i++;
+              if(done == 1) break;
             }
+            if(done == 0)
+            {
+              char error_message[30] = "An error has occurred\n";
+              write(STDERR_FILENO, error_message, strlen(error_message));
+            }
+          }
         }
-        else if (strcmp(args[0], "cd") == 0)
-        {
-            cd(args);
-        }
-        else if (strcmp(args[0], "path") == 0)
-        {
-            path(args);
-        }
-        // execute shit
         else
         {
-            int redirect = 0;
-            // Child process
-            char *new_args[MAX_ARGS];
-            int i, fd;
-
-            for (i = 0; args[i] != NULL; i++)
+          char *copy = malloc(1+strlen(command));
+          strcpy(copy, command);
+          int num_args = 0;
+          char *token = strtok_r(command, delimit, &ptr2);
+          if(token == NULL)
+          {
+            ampc = strtok_r(NULL, amp, &ptr0);
+            continue;
+          }
+          while((token = strtok_r(NULL, delimit, &ptr2)) != NULL)
+              num_args++;
+          token = strtok_r(copy, delimit, &ptr3);
+          if (strcmp(token,"exit") == 0)
+          {
+            if(num_args != 0)
             {
-                // fprintf(stdout, "start start %s \n", args[i]);
-                if (strcmp(args[i], ">") == 0)
-                {
-                    if (redirect)
-                    {
-                        redirect = 2;
-                    }
-                    else
-                    {
-                        redirect = 1;
-                        if (args[i + 1] != NULL)
-                        {
-                            fd = open(args[i + 1], O_WRONLY | O_CREAT | O_TRUNC, 0666);
-                        }
-                    }
-                }
-                new_args[i] = args[i];
-                // fprintf(stdout, "blah %s \n", args[i]);
+              char error_message[30] = "An error has occurred\n";
+              write(STDERR_FILENO, error_message, strlen(error_message));
             }
-
-            // can't chain redirects
-            if (redirect > 1)
+            else
+              exit(0);
+          }
+          else if (strcmp(token,"cd") == 0)
+          {
+            if(num_args != 1)
             {
-                fprintf(stderr, "An error has occurred\n");
+              char error_message[30] = "An error has occurred\n";
+              write(STDERR_FILENO, error_message, strlen(error_message));
+            }
+            token = strtok_r(NULL, delimit, &ptr3);
+            if(token != NULL)
+              chdir(token);
+          }
+          else if (strcmp(token,"path") == 0)
+          {
+            path = malloc(sizeof(char *) * (num_args + 1));
+            int i = 0;
+            while((token = strtok_r(NULL, delimit, &ptr3)) != NULL)
+            {
+              path[i] = malloc(1+ strlen(token));
+              strcpy(path[i], token);
+              i++;
+            }
+            path[i] = NULL;
+          }
+          else
+          {
+            int i = 0;
+            int done = 0;
+            while(path[i] != NULL)
+            {
+              done = 0;
+              char* bin_path;
+              bin_path = malloc(strlen(token)+2+strlen(path[i]));
+              strcpy(bin_path, path[i]);
+              strcat(bin_path, slash);
+              strcat(bin_path, token);
+              if(access(bin_path, X_OK) == 0)
+                done = 1;
+              else
+              {
+                i++;
                 continue;
+              }
+
+              int status;
+              char *args[num_args+2];
+              args[0] = malloc(1+strlen(token));
+              strcpy(args[0], token);
+              int j = 1;
+              while((token = strtok_r(NULL, delimit, &ptr3)) != NULL)
+              {
+                args[j] = malloc(1+strlen(token));
+                strcpy(args[j], token);
+                j++;
+              }
+              args[j] = NULL;
+              if(fork() == 0)
+              {
+                execv(bin_path, args);
+                char error_message[30] = "An error has occurred\n";
+                write(STDERR_FILENO, error_message, strlen(error_message));
+              }
+              else
+                wait(&status);
+              i++;
+              if(done == 1) break;
             }
-
-            new_args[i + 1] = NULL;
-
-            char *path_env = getenv("PATH");
-            char *path = strdup(path_env);
-            char *dir = strtok(path, ":");
-            char full_path[90];
-            int saved_stdout = dup(1);
-
-            while (dir != NULL)
+            if(done == 0)
             {
-                sprintf(full_path, "%s/%s", dir, args[0]);
-                if (access(full_path, X_OK) == 0)
-                {
-                    break;
-                }
-                dir = strtok(NULL, ":");
+              char error_message[30] = "An error has occurred\n";
+              write(STDERR_FILENO, error_message, strlen(error_message));
             }
-            free(path);
-
-            // can't find command
-            if (dir == NULL)
-            {
-                fprintf(stderr, "An error has occurred\n");
-                continue;
-            }
-
-            // can't end on >
-            if (strcmp(args[i - 1], ">") == 0)
-            {
-                fprintf(stderr, "An error has occurred\n");
-                continue;
-            }
-
-            // penultimate in a redirect needs to be a >
-            if (redirect && strcmp(args[i - 2], ">") != 0)
-            {
-                fprintf(stderr, "An error has occurred\n");
-                continue;
-            }
-            // redirect here
-            if (redirect)
-            {
-                dup2(fd, STDOUT_FILENO);
-                dup2(fd, STDERR_FILENO);
-                new_args[i - 2] = NULL;
-                new_args[i - 1] = NULL;
-            }
-
-            int num_commands = 1;
-            for (int j = 0; j < i; j++)
-            {
-                if (strcmp(new_args[j], "&") == 0)
-                {
-                    new_args[j] = NULL;
-                    num_commands++;
-                }
-            }
-
-            if (strcmp(args[0], "&") == 0)
-            {
-                continue;
-            }
-
-            // Run commands in parallel
-
-            int current_command = 0;
-            for (int j = 0; j <= i; j++)
-            {
-                if (new_args[j] == NULL || strcmp(new_args[j], "&") == 0)
-                {
-                    new_args[j] = NULL;
-                    pid_t pid = fork();
-                    if (pid == 0)
-                    {
-                        if (execv(full_path, &new_args[current_command]) == -1)
-                        {
-                            fprintf(stderr, "An error has occurred\n");
-                            exit(EXIT_FAILURE);
-                        }
-                    }
-                    else if (pid < 0)
-                    {
-                        fprintf(stderr, "An error has occurred\n");
-
-                        exit(EXIT_FAILURE);
-                    }
-                    else
-                    {
-
-                        wait(NULL);
-                    }
-
-                    if (redirect)
-                    {
-                        close(fd);
-                        // dup2(saved_stdout, 1);
-                        dup2(saved_stdout, STDOUT_FILENO);
-                        dup2(saved_stdout, STDERR_FILENO);
-                    }
-                }
-            }
+          }
         }
+        ampc = strtok_r(NULL, amp, &ptr0);
+      }
     }
+  }
+  else
+  {
+    while(1)
+    {
+      printf("%s", "wish> ");
+      fflush(stdout);
 
-    free(input);
+      char *commandAll = NULL;
+      size_t n = 0;
+      size_t c = 0;
+      c = getline(&commandAll,&n, stdin);
+      if(c == -1) break;
+      if(c == 1)
+        continue;
+      char *ampc = strtok_r(commandAll, amp, &ptr0);
+      while(ampc != NULL)
+      {
+        char *command = malloc(1+strlen(ampc));
+        strcpy(command, ampc);
+        if(strstr(command, redirect) != NULL)
+        {
+          char *t = strtok_r(command, redirect, &ptr1);
+          if(strstr(ptr1, redirect) != NULL)
+          {
+            char error_message[30] = "An error has occurred\n";
+            write(STDERR_FILENO, error_message, strlen(error_message));
+            ampc = strtok_r(NULL, amp, &ptr0);
+            continue;
+          }
+          char *commandLeft = malloc(1+strlen(t));
+          strcpy(commandLeft, t);
 
-    return 0;
+          char *copy = malloc(1+strlen(commandLeft));
+          strcpy(copy, command);
+
+          int num_args = 0;
+          char *token = strtok_r(copy, delimit, &ptr2);
+          if(token == NULL)
+          {
+            ampc = strtok_r(NULL, amp, &ptr0);
+            continue;
+          }
+          while((token = strtok_r(NULL, delimit, &ptr2)) != NULL)
+              num_args++;
+
+          t = strtok_r(NULL, strcat(delimit, redirect), &ptr1);
+          if(t == NULL)
+          {
+            char error_message[30] = "An error has occurred\n";
+            write(STDERR_FILENO, error_message, strlen(error_message));
+            ampc = strtok_r(NULL, amp, &ptr0);
+            continue;
+          }
+          char *output = malloc(1+strlen(t));
+          strcpy(output, t);
+
+          if((t = strtok_r(NULL, strcat(delimit, redirect), &ptr1)) != NULL)
+          {
+            char error_message[30] = "An error has occurred\n";
+            write(STDERR_FILENO, error_message, strlen(error_message));
+            ampc = strtok_r(NULL, amp, &ptr0);
+            continue;
+          }
+
+          int out = open(output, O_TRUNC|O_CREAT|O_WRONLY, 0600);
+          if (-1 == out) { //error 
+
+          }
+
+          int save_out = dup(fileno(stdout));
+          int save_err = dup(fileno(stderr));
+          if (-1 == dup2(out, fileno(stdout))) { //error
+
+          }
+          if (-1 == dup2(out, fileno(stderr))) { //error
+
+          }
+
+          fflush(stdout);
+          fflush(stderr);
+          close(out);
+
+          token = strtok_r(commandLeft, delimit, &ptr1);
+          
+          if (strcmp(token,"exit") == 0)
+          {
+            if(num_args != 0)
+            {
+              char error_message[30] = "An error has occurred\n";
+              write(STDERR_FILENO, error_message, strlen(error_message));
+              ampc = strtok_r(NULL, amp, &ptr0);
+              continue;
+            }
+            else
+              exit(0);
+          }
+          else if (strcmp(token,"cd") == 0)
+          {
+            if(num_args != 1)
+            {
+              char error_message[30] = "An error has occurred\n";
+              write(STDERR_FILENO, error_message, strlen(error_message));
+              ampc = strtok_r(NULL, amp, &ptr0);
+              continue;
+            }
+            else
+            {
+              token = strtok_r(NULL, delimit, &ptr1);
+              if(token != NULL)
+                chdir(token);
+            }
+          }
+          else if (strcmp(token,"path") == 0)
+          {
+            path = malloc(sizeof(char *) * (num_args + 1));
+            int i = 0;
+            while((token = strtok_r(NULL, delimit, &ptr1)) != NULL)
+            {
+              path[i] = malloc(1+ strlen(token));
+              strcpy(path[i], token);
+              i++;
+            }
+            path[i] = NULL;
+          }
+          else
+          {
+            int i = 0;
+            int done;
+            while(path[i] != NULL)
+            {
+              done = 0;
+              char* bin_path;
+              bin_path = malloc(strlen(token)+2+strlen(path[i]));
+              strcpy(bin_path, path[i]);
+              strcat(bin_path, slash);
+              strcat(bin_path, token);
+              if(access(bin_path, X_OK) == 0)
+                done = 1;
+              else
+              {
+                i++;
+                continue;
+              }
+
+              int status;
+              char *args[num_args+2];
+              args[0] = malloc(1+strlen(token));
+              strcpy(args[0], token);
+              int j = 1;
+              while((token = strtok_r(NULL, delimit, &ptr1)) != NULL)
+              {
+                args[j] = malloc(1+strlen(token));
+                strcpy(args[j], token);
+                j++;
+              }
+              args[j] = NULL;
+              if(fork() == 0)
+              {
+                execv(bin_path, args);
+                char error_message[30] = "An error has occurred\n";
+                write(STDERR_FILENO, error_message, strlen(error_message));
+              }
+              else
+                wait(&status);
+              dup2(save_out, fileno(stdout));
+              dup2(save_err, fileno(stderr));
+
+              close(save_out);
+              close(save_err);
+              i++;
+              if(done == 1) break;
+            }
+            if(done == 0)
+            {
+              char error_message[30] = "An error has occurred\n";
+              write(STDERR_FILENO, error_message, strlen(error_message));
+              ampc = strtok_r(NULL, amp, &ptr0);
+              continue;
+            }
+          }
+        }
+        else
+        {
+          char *p1, *p2;
+          char *copy = malloc(1+strlen(command));
+          strcpy(copy, command);
+          int num_args = 0;
+          char *token = strtok_r(copy, delimit, &p2);
+          if(token == NULL)
+          {
+            ampc = strtok_r(NULL, amp, &ptr0);
+            continue;
+          }
+          while((token = strtok_r(NULL, delimit, &p2)) != NULL)
+            num_args++;
+          token = strtok_r(command, delimit, &p1);
+          if(c == 1)
+          {
+          }
+          else if (strcmp(token,"exit") == 0)
+          {
+            if(num_args != 0)
+            {
+              char error_message[30] = "An error has occurred\n";
+              write(STDERR_FILENO, error_message, strlen(error_message));
+            }
+            else
+              exit(0);
+          }
+          else if (strcmp(token,"cd") == 0)
+          {
+            if(num_args != 1)
+            {
+              char error_message[30] = "An error has occurred\n";
+              write(STDERR_FILENO, error_message, strlen(error_message));
+              ampc = strtok_r(NULL, amp, &ptr0);
+              continue;
+            }
+            else
+            {
+              token = strtok_r(NULL, delimit, &p1);
+              if(token != NULL)
+                chdir(token);
+            }
+          }
+          else if (strcmp(token,"path") == 0)
+          {
+            path = malloc(sizeof(char *)*(num_args+1));
+            int j = 0;
+            while((token = strtok_r(NULL, delimit, &p1)) != NULL)
+            {
+              path[j] = malloc(1 + strlen(token));
+              strcpy(path[j], token);
+              j++;
+            }
+            path[j] = NULL;
+          }
+          else
+          {
+            int i = 0;
+            int done = 0;
+            while(path[i] != NULL)
+            {
+              done = 0;
+              char* bin_path;
+              bin_path = malloc(strlen(token)+2+strlen(path[i]));
+              strcpy(bin_path, path[i]);
+              strcat(bin_path, slash);
+              strcat(bin_path, token);
+              if(access(bin_path, X_OK) == 0)
+                done = 1;
+              else
+              {
+                i++;
+                continue;
+              }
+              int status;
+              char *args[num_args+2];
+              args[0] = malloc(1+strlen(token));
+              strcpy(args[0], token);
+              int j = 1;
+              while((token = strtok_r(NULL, delimit, &p1)) != NULL)
+              {
+                args[j] = malloc(1+strlen(token));
+                strcpy(args[j], token);
+                j++;
+              }
+              args[j] = NULL;
+              if(fork() == 0)
+              {
+                execv(bin_path, args);
+                char error_message[30] = "An error has occurred\n";
+                write(STDERR_FILENO, error_message, strlen(error_message));
+              }
+              else
+                wait(&status);
+              i++;
+              if(done == 1) break;
+            }
+            if(done == 0)
+            {
+              char error_message[30] = "An error has occurred\n";
+              write(STDERR_FILENO, error_message, strlen(error_message));
+            }
+          }
+        }
+        ampc = strtok_r(NULL, amp, &ptr0);
+      }
+    }
+  }
 }

@@ -159,11 +159,6 @@ int main(int argc, char *argv[])
             input++;
         }
 
-        char *cmds[MAX_INPUT];
-        int num_cmds = 0;
-
-        char *cmd = strtok(input, "&");
-
         // fprintf(stderr, "getting line\n");
         char *args[MAX_INPUT];
         int num_args = 0;

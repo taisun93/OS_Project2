@@ -165,10 +165,10 @@ int main(int argc, char *argv[])
 
         char *token = strtok(input, " ");
 
-        if (token == NULL)
-        {
-            continue;
-        }
+        // if (token == NULL)
+        // {
+        //     continue;
+        // }
 
         while (token != NULL && num_args < MAX_INPUT)
         {
@@ -181,6 +181,15 @@ int main(int argc, char *argv[])
                 arg2 = strsep(&token, ">");
                 args[num_args++] = arg1;
                 args[num_args++] = ">";
+                args[num_args++] = arg2;
+            }
+            if (strcmp(token, "&") != 0 && strstr(token, ">") != NULL)
+            {
+                char *arg1, *arg2;
+                arg1 = strsep(&token, "&");
+                arg2 = strsep(&token, "&");
+                args[num_args++] = arg1;
+                args[num_args++] = "&";
                 args[num_args++] = arg2;
             }
             else
@@ -198,7 +207,11 @@ int main(int argc, char *argv[])
         // }
 
         // crazy if else begins
-        if (strcmp(args[0], "exit") == 0)
+        if (strcmp(args[0] == NULL)
+        {
+            // continue;
+        }
+        else if (strcmp(args[0], "exit") == 0)
         {
 
             if (num_args == 1) // check for no extra args

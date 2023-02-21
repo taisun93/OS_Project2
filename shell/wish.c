@@ -113,7 +113,7 @@ void execute_command(char **args, int num_args, int interactive)
         {
             if (interactive)
             {
-                break;
+                return;
             }
             exit(0);
         }
@@ -164,7 +164,7 @@ void execute_command(char **args, int num_args, int interactive)
         if (redirect > 1)
         {
             fprintf(stderr, "An error has occurred\n");
-            continue;
+            return;
         }
 
         new_args[i + 1] = NULL;
@@ -180,7 +180,7 @@ void execute_command(char **args, int num_args, int interactive)
             sprintf(full_path, "%s/%s", dir, args[0]);
             if (access(full_path, X_OK) == 0)
             {
-                break;
+                return;
             }
             dir = strtok(NULL, ":");
         }
@@ -190,21 +190,21 @@ void execute_command(char **args, int num_args, int interactive)
         if (dir == NULL)
         {
             fprintf(stderr, "An error has occurred\n");
-            continue;
+            return;
         }
 
         // can't end on >
         if (strcmp(args[i - 1], ">") == 0)
         {
             fprintf(stderr, "An error has occurred\n");
-            continue;
+            return;
         }
 
         // penultimate in a redirect needs to be a >
         if (redirect && strcmp(args[i - 2], ">") != 0)
         {
             fprintf(stderr, "An error has occurred\n");
-            continue;
+            return;
         }
         // redirect here
         if (redirect)

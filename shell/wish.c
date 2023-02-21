@@ -223,6 +223,12 @@ int main(int argc, char *argv[])
             char *new_args[MAX_ARGS];
             int i, fd;
 
+            // lonely and
+            if (strcmp(args[0], "&") == 0)
+            {
+                continue;
+            }
+
             for (i = 0; args[i] != NULL; i++)
             {
                 // fprintf(stdout, "start start %s \n", args[i]);
@@ -282,12 +288,6 @@ int main(int argc, char *argv[])
             if (strcmp(args[i - 1], ">") == 0)
             {
                 fprintf(stderr, "An error has occurred\n");
-                continue;
-            }
-
-            // lonely and
-            if (strcmp(args[i - 1], "&") == 0)
-            {
                 continue;
             }
 

@@ -7,6 +7,8 @@
 #include "mmu.h"
 #include "proc.h"
 
+int readcount = 0;
+
 int
 sys_fork(void)
 {

@@ -11,7 +11,6 @@
 #include "file.h"
 
 struct devsw devsw[NDEV];
-int readcount = 0;
 struct {
   struct spinlock lock;
   struct file file[NFILE];

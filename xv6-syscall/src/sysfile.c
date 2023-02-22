@@ -81,7 +81,7 @@ int sys_read(void)
 
 int sys_getreadcount(void)
 {
-  return 69;
+  return readcount;
 }
 
 int sys_write(void)

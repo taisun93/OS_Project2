@@ -1,0 +1,1 @@
+Passed all but the last shell one in the VM. Eventually just kinda got tired and gave up on that.

@@ -40,7 +40,7 @@ void free_path()
     num_path = 0;
 }
 
-int execute_group(char **group, int *pids, int *index)
+int exec(char **group, int *pids, int *index)
 {
     int redirection_index = -1;
     int redirection_operations = 0;
@@ -429,7 +429,7 @@ int execute_line(char *line_)
     int index = 0;
     for (int i = 0; i < num_groups; i++)
     {
-        if (execute_group(groups[i], pids, &index))
+        if (exec(groups[i], pids, &index))
         {
             for (int j = 0; j < num_groups; j++)
             {
